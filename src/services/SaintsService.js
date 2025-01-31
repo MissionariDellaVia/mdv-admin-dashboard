@@ -1,17 +1,21 @@
 import axios from 'axios'
 
-const API_URL = 'https://your-api-endpoint.com/api/saints'
+const API_URL = 'http://localhost:8000/api/mdv/v1/saints'
 
 class SaintsService {
     getAll() {
-        // return axios.get(API_URL)
-        return Promise.resolve({
-            data: [
-                { id: 1, date: '2025-01-01', title: 'Gospel 1' },
-                { id: 2, date: '2025-02-01', title: 'Gospel 2' },
-                { id: 3, date: '2025-03-01', title: 'Gospel 3' },
-            ]
-        })
+        return axios.get(API_URL)
+            .then(response => {
+                if (response.data.success) {
+                    return response.data.data
+                } else {
+                    throw new Error('Failed to fetch saints data')
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching saints:', error)
+                throw error
+            })
     }
 
     get(id) {
@@ -19,7 +23,16 @@ class SaintsService {
     }
 
     create(data) {
-        return axios.post(API_URL, data)
+        return axios.post(API_URL, data).then(response => {
+            if (response.data.success) {
+                return response.data.data
+            } else {
+                throw new Error('Failed to fetch saints data')
+            }
+        }).catch(error => {
+            console.error('Error fetching saints:', error)
+            throw error
+        })
     }
 
     update(id, data) {

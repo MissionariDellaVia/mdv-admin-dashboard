@@ -12,18 +12,20 @@
         fixed
         :width="250"
     >
+
       <v-list dense>
         <!-- Application Logo or Title -->
         <v-list-item>
           <v-list-item-content>
-            <v-list-item-title class="title ml-3">MdV Admin</v-list-item-title>
+            <v-img :src="logo" alt="MdV Admin Logo" class="mx-auto my-5" max-width="60"></v-img>
           </v-list-item-content>
         </v-list-item>
 
-        <v-divider></v-divider>
+        <v-divider class="mb-5"></v-divider>
 
         <!-- Navigation Links -->
         <v-list-item
+            class="mt-1 text-center"
             v-for="item in navItems"
             :key="item.title"
             :to="item.route"
@@ -31,12 +33,9 @@
             link
             :active="isActiveRoute(item.route)"
         >
-          <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title><v-icon>{{ item.icon }}</v-icon> {{ item.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -51,8 +50,6 @@
     >
       <!-- Menu Button (Visible on Mobile) -->
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-
-      <v-toolbar-title>Missionari della Via - Admin Dashboard</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -72,17 +69,12 @@
         <router-view></router-view>
       </v-container>
     </v-main>
-
-    <!-- Optional Footer -->
-    <v-footer app color="primary" class="white--text">
-      <v-col class="text-center">
-        &copy; {{ currentYear }} MdV Admin Dashboard
-      </v-col>
-    </v-footer>
   </v-app>
 </template>
 
 <script>
+import logo from './assets/logo-mdv.png'
+
 export default {
   name: 'App',
   data() {
@@ -98,6 +90,7 @@ export default {
         { title: 'Semini', icon: 'mdi-calendar', route: '/seeds' },
       ],
       currentYear: new Date().getFullYear(), // For the footer
+      logo, // Add the imported logo to the data
     }
   },
   methods: {
@@ -119,7 +112,7 @@ export default {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #8B4513; /* Brown color */
+  background-color: #3c1e02; /* Brown color */
   border-radius: 4px;
 }
 </style>
