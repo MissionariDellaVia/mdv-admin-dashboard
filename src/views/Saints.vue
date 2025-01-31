@@ -38,7 +38,7 @@
     <!-- Dialog for Adding/Editing Saint -->
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
-        <v-card-title>
+        <v-card-title class="text-center my-5">
           <span class="text-h5">{{ formTitle }}</span>
         </v-card-title>
         <v-card-text>
@@ -114,12 +114,12 @@ export default {
     },
     openDialog() {
       this.editedSaint = {}
-      this.formTitle = 'Add Saint'
+      this.formTitle = 'Aggiungi un Santo'
       this.dialog = true
     },
     editSaint(item) {
       this.editedSaint = { ...item }
-      this.formTitle = 'Edit Saint'
+      this.formTitle = 'Modifica Santo'
       this.dialog = true
     },
     deleteSaint(id) {

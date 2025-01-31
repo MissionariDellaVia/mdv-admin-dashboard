@@ -7,13 +7,28 @@ class SaintsService {
         return axios.get(API_URL)
             .then(response => {
                 if (response.data.success) {
-                    return response.data.data
+                    return response.data.data.data
                 } else {
                     throw new Error('Failed to fetch saints data')
                 }
             })
             .catch(error => {
                 console.error('Error fetching saints:', error)
+                throw error
+            })
+    }
+
+    async getTotal() {
+        return await axios.get(API_URL)
+            .then(response => {
+                if (response.data.success) {
+                    return response.data.data.total
+                } else {
+                    throw new Error('Failed to fetch saint data')
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching saint:', error)
                 throw error
             })
     }

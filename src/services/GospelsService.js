@@ -1,17 +1,36 @@
 import axios from 'axios'
 
-const API_URL = 'https://your-api-endpoint.com/api/gospels'
+const API_URL = 'http://localhost:8000/api/mdv/v1/gospels'
 
 class GospelsService {
-    getAll() {
-        // return axios.get(API_URL)
-        return Promise.resolve({
-            data: [
-                { id: 1, date: '2025-01-01', title: 'Gospel 1' },
-                { id: 2, date: '2025-02-01', title: 'Gospel 2' },
-                { id: 3, date: '2025-03-01', title: 'Gospel 3' },
-            ]
-        })
+    async getAll() {
+        return axios.get(API_URL)
+            .then(response => {
+                if (response.data.success) {
+                    return response.data.data.data
+                } else {
+                    throw new Error('Failed to fetch gospels data')
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching gospels:', error)
+                throw error
+            })
+    }
+
+    async getTotal() {
+        return await axios.get(API_URL)
+            .then(response => {
+                if (response.data.success) {
+                    return response.data.data.total
+                } else {
+                    throw new Error('Failed to fetch gospels data')
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching gospels:', error)
+                throw error
+            })
     }
 
     get(id) {

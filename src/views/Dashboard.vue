@@ -4,11 +4,11 @@
   <v-container fluid>
     <v-row>
       <!-- Summary Cards -->
-      <v-col cols="12" sm="6" md="4">
+      <v-col cols="12" sm="6" md="3">
         <v-card class="pa-4" outlined>
           <v-card-title>
-            <v-icon large color="primary">mdi-book</v-icon>
-            <span class="ml-3">Vangeli inseriti</span>
+            <v-icon large color="primary">mdi-book-cross</v-icon>
+            <span class="ml-3">Vangeli aggiunti</span>
           </v-card-title>
           <v-card-text>
             <h2>{{ totals.gospels }}</h2>
@@ -16,11 +16,23 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" sm="6" md="4">
+      <v-col cols="12" sm="6" md="3">
+        <v-card class="pa-4" outlined>
+          <v-card-title>
+            <v-icon large color="accent">mdi-comment-outline</v-icon>
+            <span class="ml-3">Commenti totali</span>
+          </v-card-title>
+          <v-card-text>
+            <h2 >{{ totals.contacts }}</h2>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" sm="6" md="3">
         <v-card class="pa-4" outlined>
           <v-card-title>
             <v-icon large color="secondary">mdi-account-group</v-icon>
-            <span class="ml-3">Santi descritti</span>
+            <span class="ml-3">Santi aggiunti</span>
           </v-card-title>
           <v-card-text>
             <h2>{{ totals.saints }}</h2>
@@ -28,14 +40,14 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" sm="6" md="4">
+      <v-col cols="12" sm="6" md="3">
         <v-card class="pa-4" outlined>
           <v-card-title>
-            <v-icon large color="accent">mdi-contacts</v-icon>
-            <span class="ml-3">Eventi aggiunti</span>
+            <v-icon large color="accent">mdi-dots-circle</v-icon>
+            <span class="ml-3">Semini aggiunti</span>
           </v-card-title>
           <v-card-text>
-            <h2>{{ totals.contacts }}</h2>
+            <h2 >{{ totals.contacts }}</h2>
           </v-card-text>
         </v-card>
       </v-col>
@@ -47,10 +59,9 @@
       <!-- Recent Events -->
       <v-col cols="12" md="6">
         <v-card outlined>
-          <v-card-title>
-            Recent Events
-            <v-spacer></v-spacer>
-            <v-btn text="" color="primary" @click="navigateTo('Events')">View All</v-btn>
+          <v-card-title class="pa-5">
+            Eventi recenti
+            <v-btn text="" color="primary" class="float-end rounded-pill" @click="navigateTo('Events')">visualizza tutti</v-btn>
           </v-card-title>
           <v-card-text>
             <v-list two-line>
@@ -64,7 +75,7 @@
               </v-list-item>
               <v-list-item v-if="recentEvents.length === 0">
                 <v-list-item-content>
-                  <v-list-item-title>No recent events found.</v-list-item-title>
+                  <v-list-item-title>Nessun evento trovato.</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -72,26 +83,12 @@
         </v-card>
       </v-col>
 
-      <!-- Upcoming Holy Week Indicators -->
+      <!-- Gospels Chart -->
       <v-col cols="12" md="6">
         <v-card outlined>
-          <v-card-title>
-            Holy Week Indicators
-          </v-card-title>
+          <v-card-title class="pa-5">Panoramica sui Vangeli</v-card-title>
           <v-card-text>
-            <v-timeline>
-              <v-timeline-item
-                  v-for="indicator in holyWeekIndicators"
-                  :key="indicator.id"
-                  :color="indicator.color"
-                  :icon="indicator.icon"
-              >
-                <strong>{{ indicator.name }}</strong>: {{ indicator.description }}
-                <v-chip class="mt-2" :color="indicator.chipColor" small>
-                  {{ formatDate(indicator.date) }}
-                </v-chip>
-              </v-timeline-item>
-            </v-timeline>
+            <canvas id="gospelsChart"></canvas>
           </v-card-text>
         </v-card>
       </v-col>
@@ -100,25 +97,17 @@
     <v-divider class="my-6"></v-divider>
 
     <v-row>
-      <!-- Gospels Chart -->
-      <v-col cols="12" md="6">
+      <!-- Upcoming Holy Week Indicators -->
+      <v-col cols="12" md="12">
         <v-card outlined>
-          <v-card-title>Gospels Overview</v-card-title>
+          <v-card-title class="text-center pa-5">
+            Aggiungi un Vangelo del Giorno
+          </v-card-title>
           <v-card-text>
-            <canvas id="gospelsChart"></canvas>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <!-- Contacts Distribution Chart -->
-      <v-col cols="12" md="6">
-        <v-card outlined>
-          <v-card-title>Contacts Distribution</v-card-title>
-          <v-card-text>
-            <canvas id="contactsChart"></canvas>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -148,39 +137,16 @@ export default {
     // Recent events
     const recentEvents = ref([])
 
-    // Holy Week Indicators
-    const holyWeekIndicators = ref([
-      {
-        id: 1,
-        name: 'Palm Sunday',
-        description: 'Commemoration of Jesus\' entry into Jerusalem.',
-        date: '2025-03-24',
-        color: 'green',
-        icon: 'mdi-palm-tree',
-        chipColor: 'green lighten-2',
-      },
-      {
-        id: 2,
-        name: 'Maundy Thursday',
-        description: 'Observance of the Last Supper.',
-        date: '2025-03-28',
-        color: 'blue',
-        icon: 'mdi-teach',
-        chipColor: 'blue lighten-2',
-      },
-      // Add more indicators as needed
-    ])
-
     // Fetch totals from services
     const fetchTotals = async () => {
       try {
         const [gospelsRes, saintsRes, contactsRes] = await Promise.all([
-          GospelsService.getAll(),
-          SaintsService.getAll(),
+          GospelsService.getTotal(),
+          SaintsService.getTotal(),
           ContactsService.getAll(),
         ])
-        totals.value.gospels = gospelsRes.data.length
-        totals.value.saints = saintsRes.data.length
+        totals.value.gospels = gospelsRes
+        totals.value.saints = saintsRes
         totals.value.contacts = contactsRes.data.length
       } catch (error) {
         console.error('Error fetching totals:', error)
@@ -217,8 +183,8 @@ export default {
 
         // Gospels Chart Data
         const gospelsByMonth = {}
-        gospelsRes.data.forEach(gospel => {
-          const month = new Date(gospel.date).toLocaleString('default', { month: 'short' })
+        gospelsRes.forEach(gospel => {
+          const month = new Date(gospel.created_at).toLocaleString('default', { month: 'short' })
           gospelsByMonth[month] = (gospelsByMonth[month] || 0) + 1
         })
 
@@ -228,41 +194,10 @@ export default {
           data: {
             labels: Object.keys(gospelsByMonth),
             datasets: [{
-              label: 'Gospels per Month',
+              label: 'Vangeli per il mese',
               data: Object.values(gospelsByMonth),
               backgroundColor: 'rgba(139, 69, 19, 0.6)', // Brown color
               borderColor: 'rgba(139, 69, 19, 1)',
-              borderWidth: 1,
-            }],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-          },
-        })
-
-        // Contacts Chart Data
-        const contactsByType = {}
-        contactsRes.data.forEach(contact => {
-          const type = contact.type || 'Other'
-          contactsByType[type] = (contactsByType[type] || 0) + 1
-        })
-
-        const contactsCtx = document.getElementById('contactsChart').getContext('2d')
-        new Chart(contactsCtx, {
-          type: 'doughnut',
-          data: {
-            labels: Object.keys(contactsByType),
-            datasets: [{
-              label: 'Contacts Distribution',
-              data: Object.values(contactsByType),
-              backgroundColor: [
-                '#8B4513', // SaddleBrown
-                '#CD853F', // Peru
-                '#DEB887', // BurlyWood
-                '#F4A460', // SandyBrown
-              ],
-              borderColor: '#fff',
               borderWidth: 1,
             }],
           },
@@ -286,7 +221,6 @@ export default {
     return {
       totals,
       recentEvents,
-      holyWeekIndicators,
       navigateTo,
       formatDate,
     }
