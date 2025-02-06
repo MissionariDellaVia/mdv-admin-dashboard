@@ -54,9 +54,6 @@
       <v-spacer></v-spacer>
 
       <!-- Optional Toolbar Items (e.g., User Profile, Notifications) -->
-      <v-btn icon="mdi-bell">
-        <v-icon>mdi-bell</v-icon>
-      </v-btn>
       <v-btn icon="mdi-account-circle">
         <v-icon>mdi-account-circle</v-icon>
       </v-btn>
@@ -86,7 +83,6 @@ export default {
         { title: 'Commenti', icon: 'mdi-comment-outline', route: '/comments' },
         { title: 'Santi', icon: 'mdi-account-group', route: '/saints' },
         { title: 'Contatti', icon: 'mdi-contacts', route: '/contacts' },
-        { title: 'Indirizzi', icon: 'mdi-map-marker', route: '/addresses' },
         { title: 'Eventi', icon: 'mdi-calendar', route: '/events' },
         { title: 'Semini', icon: 'mdi-dots-circle', route: '/seeds' },
       ],

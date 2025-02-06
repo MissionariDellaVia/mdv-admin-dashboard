@@ -5,18 +5,16 @@ import Dashboard from '../views/Dashboard.vue'
 import Gospels from '../views/Gospels.vue'
 import Saints from '../views/Saints.vue'
 import Comments from '../views/Comments.vue'
-// import Contacts from '../views/Contacts.vue'
-// import Addresses from '../views/Addresses.vue'
-// import Events from '../views/Events.vue'
+import PlacesContacts from '../views/PlacesContacts.vue'
+import Events from '../views/Events.vue'
 
 const routes = [
     { path: '/', name: 'Dashboard', component: Dashboard },
     { path: '/gospels', name: 'Gospels', component: Gospels },
     { path: '/saints', name: 'Saints', component: Saints },
     { path: '/comments', name: 'Comments', component: Comments },
-    // { path: '/contacts', name: 'Contacts', component: Contacts },
-    // { path: '/addresses', name: 'Addresses', component: Addresses },
-    // { path: '/events', name: 'Events', component: Events },
+    { path: '/contacts', name: 'Contacts', component: PlacesContacts },
+    { path: '/events', name: 'Events', component: Events },
 ]
 
 const router = createRouter({

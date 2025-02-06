@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 const API_URL = 'http://localhost:8000/api/mdv/v1/saints'
+const API_SEARCH_URL = 'http://localhost:8000/api/mdv/v1/search/saints'
 
 class SaintsService {
     getAll(page = 1, itemsPerPage = 10) {
@@ -16,6 +17,26 @@ class SaintsService {
                         data: response.data.data,
                         total: response.data.total
                     }
+                } else {
+                    throw new Error('Failed to fetch saints data')
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching saints:', error)
+                throw error
+            })
+    }
+
+    async search(searchText = "") {
+        console.log('searchText:', searchText)
+        return axios.get(API_SEARCH_URL, searchText ? {
+            params: {
+                query: searchText
+            }
+        } : {})
+            .then(response => {
+                if (response.data) {
+                    return response.data;
                 } else {
                     throw new Error('Failed to fetch saints data')
                 }

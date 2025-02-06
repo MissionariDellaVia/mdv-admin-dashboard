@@ -1,14 +1,11 @@
+// src/services/PlacesService.js
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8000/api/mdv/v1/events'
+const API_URL = 'http://localhost:8000/api/mdv/v1/contacts/places'
 
-class EventService {
+class PlacesService {
     getAll() {
         return axios.get(API_URL)
-    }
-
-    get(id) {
-        return axios.get(`${API_URL}/${id}`)
     }
 
     create(data) {
@@ -24,4 +21,4 @@ class EventService {
     }
 }
 
-export default new EventService()
+export default new PlacesService()
