@@ -1,4 +1,4 @@
-<!-- src/views/Saints.vue -->
+<!-- src/views/Comments.vue -->
 
 <template>
   <v-container>
@@ -9,13 +9,13 @@
             mdi-plus
           </v-icon>
         </v-btn>
-        <span>Santi</span>
+        <span>Commenti per Vangelo</span>
       </v-card-title>
       <v-data-table
           :loading="isLoading"
           :disabled="isLoading"
           :headers="headers"
-          :items="saints"
+          :items="comments"
           :search="search"
           :items-length="totalItems"
           :page="page"
@@ -32,10 +32,10 @@
           ></v-text-field>
         </template>
         <template v-slot:item.actions="{ item }">
-          <v-icon small color="yellow" class="mr-2" @click="editSaint(item)">
+          <v-icon small color="yellow" class="mr-2" @click="editComment(item)">
             mdi-pencil
           </v-icon>
-          <v-icon small color="red" @click="deleteSaint(item.saint_id)">
+          <v-icon small color="red" @click="deleteComment(item.comment_id)">
             mdi-delete
           </v-icon>
         </template>
@@ -53,11 +53,10 @@
             ></v-pagination>
           </v-toolbar>
         </template>
-
       </v-data-table>
     </v-card>
 
-    <!-- Dialog for Adding/Editing Saint -->
+    <!-- Dialog for Adding/Editing Comment -->
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
         <v-card-title class="text-center my-5">
@@ -66,30 +65,35 @@
         <v-card-text>
           <v-form ref="form" v-model="valid">
             <!-- Add form fields here -->
-            <v-text-field
-                v-model="editedSaint.name"
-                label="Nome"
-                :rules="[rules.required]"
-                required
-            ></v-text-field>
             <v-textarea
-                v-model="editedSaint.biography"
-                label="Biografia"
+                v-model="editedComment.comment_text"
+                label="Commento"
                 :rules="[rules.required]"
                 required
             ></v-textarea>
             <v-text-field
-                v-model="editedSaint.recurrence_date"
-                label="Data Ricorrenza"
-                :rules="[rules.required, rules.date]"
-                required
+                v-model="editedComment.extra_info"
+                label="Informazioni Extra"
             ></v-text-field>
+            <v-text-field
+                v-model="editedComment.youtube_link"
+                label="Link YouTube"
+            ></v-text-field>
+            <v-text-field
+                v-model="editedComment.comment_order"
+                label="Ordine Commento"
+                type="number"
+            ></v-text-field>
+            <v-checkbox
+                v-model="editedComment.is_latest"
+                label="Ultimo Commento"
+            ></v-checkbox>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="brown darken-1" text="Cancel" @click="closeDialog">Chiudi</v-btn>
-          <v-btn color="brown darken-1" text="Save" @click="saveSaint">Salva</v-btn>
+          <v-btn color="brown darken-1" text="Save" @click="saveComment">Salva</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -97,94 +101,95 @@
 </template>
 
 <script>
-import SaintsService from '../services/SaintsService'
+import CommentsService from '../services/CommentsService'
 
 export default {
   data() {
     return {
       isLoading: false,
-      saints: [],
+      comments: [],
       headers: [
-        { title: 'Nome', value: 'name', width: '20%'},
-        { title: 'Biografia', value: 'biography' },
-        { title: 'Ricorrenza', value: 'recurrence_date', width: '10%' },
-        // Add other headers
-        { title: '', value: 'actions', sortable: false, width: '10%' },
+        { title: 'Testo Commento', value: 'comment_text' },
+        { title: 'Informazioni Extra', value: 'extra_info' },
+        { title: 'Link YouTube', value: 'youtube_link' },
+        { title: 'Ordine Commento', value: 'comment_order' },
+        { title: 'Ultimo Commento', value: 'is_latest' },
+        { title: '', value: 'actions', sortable: false },
       ],
       search: '',
       dialog: false,
-      editedSaint: {},
+      editedComment: {},
       formTitle: '',
       valid: false,
       rules: {
         required: value => !!value || 'Required.',
-        date: value => /^\d{4}-\d{2}-\d{2}$/.test(value) || 'Formato data atteso (YYYY-MM-DD).',
       },
       page: 1,
-      itemsPerPage: 30,
+      itemsPerPage: 10,
       totalItems: 0,
+      gospelId: 1, // Assumi che il gospelId sia passato o impostato
     }
   },
   created() {
-    this.fetchSaints()
+    this.fetchComments()
   },
   methods: {
-    fetchSaints() {
+    fetchComments() {
       this.isLoading = true;
-      SaintsService.getAll(this.page, this.itemsPerPage)
+      CommentsService.getAll(this.gospelId, this.page, this.itemsPerPage)
           .then(response => {
-            this.saints = response.data
+            this.comments = response.data
             this.totalItems = response.total
           })
           .catch(error => {
             console.error(error)
           }).finally(() => {
-            this.isLoading = false
-          })
+        this.isLoading = false
+      })
     },
     handlePageChange(newPage) {
-      console.log('New page:', newPage);
       this.page = newPage;
-      this.fetchSaints();
+      this.fetchComments();
     },
     openDialog() {
-      this.editedSaint = {}
-      this.formTitle = 'Aggiungi un Santo'
+      this.editedComment = {}
+      this.formTitle = 'Aggiungi Commento'
       this.dialog = true
     },
-    editSaint(item) {
-      this.editedSaint = { ...item }
-      this.formTitle = 'Modifica Santo'
+    editComment(item) {
+      this.editedComment = { ...item }
+      this.formTitle = 'Modifica Commento'
       this.dialog = true
     },
-    deleteSaint(id) {
-      if (confirm('Are you sure you want to delete this saint?')) {
-        SaintsService.delete(id)
+    deleteComment(id) {
+      if (confirm('Sei sicuro di voler eliminare questo commento?')) {
+        CommentsService.delete(id)
             .then(() => {
-              this.fetchSaints()
+              this.fetchComments()
             })
             .catch(error => {
               console.error(error)
             })
       }
     },
-    saveSaint() {
+    saveComment() {
       if (this.$refs.form.validate()) {
-        if (this.editedSaint.saint_id) {
-          // Update existing saint
-          SaintsService.update(this.editedSaint.saint_id, this.editedSaint)
+        if (this.editedComment.comment_id) {
+          // Update existing comment
+          CommentsService.update(this.editedComment.comment_id, this.editedComment)
               .then(() => {
-                this.fetchSaints()
+                this.fetchComments()
                 this.closeDialog()
               })
               .catch(error => {
                 console.error(error)
               })
         } else {
-          // Create new saint
-          SaintsService.create(this.editedSaint)
+          // Create new comment
+          this.editedComment.gospel_id = this.gospelId;
+          CommentsService.create(this.editedComment)
               .then(() => {
-                this.fetchSaints()
+                this.fetchComments()
                 this.closeDialog()
               })
               .catch(error => {

@@ -1,12 +1,14 @@
+// src/services/CommentsService.js
+
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8000/api/mdv/v1/gospels'
-const API_SEARCH_URL = 'http://localhost:8000/api/mdv/v1/search/gospels'
+const API_URL = 'http://localhost:8000/api/mdv/v1/comments'
 
-class GospelsService {
-    async getAll(page = 1, itemsPerPage = 10) {
+class CommentsService {
+    async getAll(gospelId, page = 1, itemsPerPage = 10) {
         return axios.get(API_URL, {
             params: {
+                gospel_id: gospelId,
                 page: page,
                 limit: itemsPerPage
             }
@@ -18,31 +20,11 @@ class GospelsService {
                         total: response.data.total
                     }
                 } else {
-                    throw new Error('Failed to fetch gospels data')
+                    throw new Error('Failed to fetch comments data')
                 }
             })
             .catch(error => {
-                console.error('Error fetching gospels:', error)
-                throw error
-            })
-    }
-
-    async search(searchText = "") {
-        console.log('searchText:', searchText)
-        return axios.get(API_SEARCH_URL, searchText ? {
-            params: {
-                query: searchText
-            }
-        } : {})
-            .then(response => {
-                if (response.data) {
-                    return response.data;
-                } else {
-                    throw new Error('Failed to fetch gospels data')
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching gospels:', error)
+                console.error('Error fetching comments:', error)
                 throw error
             })
     }
@@ -53,11 +35,11 @@ class GospelsService {
                 if (response.data) {
                     return response.data.total
                 } else {
-                    throw new Error('Failed to fetch gospels data')
+                    throw new Error('Failed to fetch comments data')
                 }
             })
             .catch(error => {
-                console.error('Error fetching gospels:', error)
+                console.error('Error fetching comments:', error)
                 throw error
             })
     }
@@ -79,4 +61,4 @@ class GospelsService {
     }
 }
 
-export default new GospelsService()
+export default new CommentsService()

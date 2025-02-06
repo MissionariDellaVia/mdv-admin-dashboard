@@ -10,11 +10,18 @@
         <span>Vangelo</span>
       </v-card-title>
       <v-data-table
+          :loading="isLoading"
+          :disabled="isLoading"
           :headers="headers"
           :items="gospels"
+          :items-length="totalItems"
           :search="search"
+          :page="page"
           class="elevation-1"
       >
+        <template v-slot:progress>
+          <v-progress-linear indeterminate color="primary"></v-progress-linear>
+        </template>
         <template v-slot:top>
           <v-text-field
               v-model="search"
@@ -32,7 +39,22 @@
         </template>
         <template v-slot:item.comments="{ item }">
           <span v-if="item.comments.length === 0">Nessun commento</span>
-          <span v-else @click="openCommentsDialog(item.comments)" style="cursor: pointer;" @mouseover="hover = true" @mouseleave="hover = false" :style="{ color: hover ? 'saddlebrown' : 'inherit' }">{{ item.comments.length }} commenti</span>        </template>
+          <span v-else @click="openCommentsDialog(item.comments)" style="cursor: pointer;" @mouseover="hover = true" @mouseleave="hover = false" :style="{ color: hover ? 'saddlebrown' : 'inherit' }">{{ item.comments.length }} commenti</span>
+        </template>
+        <template v-slot:bottom>
+          <v-toolbar flat>
+            <!-- Items per page selector -->
+            <span class="ml-4">
+              {{ (page - 1) * itemsPerPage + 1 }}-{{ Math.min(page * itemsPerPage, totalItems) }} di {{ totalItems }}
+            </span>
+            <v-pagination
+                v-model="page"
+                :length="Math.ceil(totalItems / itemsPerPage)"
+                :total-visible="7"
+                @update:modelValue="handlePageChange"
+            ></v-pagination>
+          </v-toolbar>
+        </template>
       </v-data-table>
     </v-card>
 
@@ -128,6 +150,7 @@ import GospelsService from '../services/GospelsService'
 export default {
   data() {
     return {
+      isLoading: false,
       gospels: [],
       comments: [],
       commentsDialog: false,
@@ -154,6 +177,9 @@ export default {
       rules: {
         required: value => !!value || 'Required.',
       },
+      page: 1,
+      itemsPerPage: 30,
+      totalItems: 0,
     }
   },
   created() {
@@ -161,14 +187,24 @@ export default {
   },
   methods: {
     fetchGospels() {
-      GospelsService.getAll()
+      this.isLoading = true;
+      GospelsService.getAll(this.page, this.itemsPerPage)
           .then(response => {
-            this.gospels = response
+            this.gospels = response.data
+            this.totalItems = response.total
           })
           .catch(error => {
             console.error(error)
           })
+          .finally(() => {
+            this.isLoading = false;
+          });
     },
+    handlePageChange(newPage) {
+      this.page = newPage;
+      this.fetchGospels();
+    },
+
     openDialog() {
       this.editedGospel = {}
       this.formTitle = 'Aggiungi Vangelo'

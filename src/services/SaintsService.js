@@ -3,11 +3,19 @@ import axios from 'axios'
 const API_URL = 'http://localhost:8000/api/mdv/v1/saints'
 
 class SaintsService {
-    getAll() {
-        return axios.get(API_URL)
+    getAll(page = 1, itemsPerPage = 10) {
+        return axios.get(API_URL, {
+            params: {
+                page: page,
+                limit: itemsPerPage
+            }
+        })
             .then(response => {
-                if (response.data.success) {
-                    return response.data.data.data
+                if (response.data) {
+                    return {
+                        data: response.data.data,
+                        total: response.data.total
+                    }
                 } else {
                     throw new Error('Failed to fetch saints data')
                 }
@@ -21,8 +29,8 @@ class SaintsService {
     async getTotal() {
         return await axios.get(API_URL)
             .then(response => {
-                if (response.data.success) {
-                    return response.data.data.total
+                if (response.data) {
+                    return response.data.total
                 } else {
                     throw new Error('Failed to fetch saint data')
                 }
@@ -39,7 +47,7 @@ class SaintsService {
 
     create(data) {
         return axios.post(API_URL, data).then(response => {
-            if (response.data.success) {
+            if (response.data) {
                 return response.data.data
             } else {
                 throw new Error('Failed to fetch saints data')
