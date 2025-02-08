@@ -79,12 +79,14 @@ export default {
       drawer: true, // Controls the visibility of the navigation drawer
       navItems: [ // Navigation items for the sidebar
         { title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/' },
-        { title: 'Vangelo', icon: 'mdi-book-cross', route: '/gospels' },
+        { title: 'Via del Vangelo', icon: 'mdi-cross-outline', route: '/gospels-way' },
+        { title: 'Vangeli', icon: 'mdi-book-cross', route: '/gospels' },
         { title: 'Commenti', icon: 'mdi-comment-outline', route: '/comments' },
         { title: 'Santi', icon: 'mdi-account-group', route: '/saints' },
         { title: 'Contatti', icon: 'mdi-contacts', route: '/contacts' },
         { title: 'Eventi', icon: 'mdi-calendar', route: '/events' },
         { title: 'Semini', icon: 'mdi-dots-circle', route: '/seeds' },
+        { title: 'Pagine', icon: 'mdi-page-layout-body', route: '/pages' },
       ],
       currentYear: new Date().getFullYear(), // For the footer
       logo, // Add the imported logo to the data

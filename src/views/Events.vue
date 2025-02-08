@@ -1,204 +1,221 @@
 <template>
-  <v-container fluid>
-    <!-- Loading Spinner Overlay -->
-    <!-- Replace :value with v-model:active to properly bind the overlay in Vuetify 3.7.0 -->
-    <v-overlay v-model:active="loading" absolute>
-      <v-progress-circular indeterminate size="64"></v-progress-circular>
-    </v-overlay>
+  <v-container fluid class="relative-position">
+    <!-- Spinner displayed while loading -->
+    <div v-if="loading" class="spinner-container">
+      <v-progress-circular indeterminate size="64" color="primary" />
+    </div>
 
-    <!-- Header -->
-    <v-row class="mb-4">
-      <v-col cols="12" class="d-flex justify-space-between align-center">
-        <h2 class="title">Eventi</h2>
-        <v-btn color="primary" @click="openEventDialog">
-          Aggiungi Evento
-        </v-btn>
-      </v-col>
-    </v-row>
+    <!-- Content displayed when loading is finished -->
+    <div v-else>
+      <!-- Header -->
+      <v-row class="mb-4">
+        <v-col cols="12" class="d-flex justify-space-between align-center">
+          <h2 class="title">Eventi</h2>
+          <v-btn color="primary" @click="openEventDialog">
+            Aggiungi Evento
+          </v-btn>
+        </v-col>
+      </v-row>
 
-    <!-- Events List -->
-    <v-row v-if="!loading">
-      <v-col cols="12" md="6" v-for="event in events" :key="event.event_id">
-        <v-card outlined class="mb-4 fill-height">
-          <v-card-title class="headline">{{ event.title }}</v-card-title>
+      <!-- Events List -->
+      <v-row>
+        <v-col cols="12" md="6" v-for="event in events" :key="event.event_id">
+          <v-card outlined class="mb-4 fill-height">
+            <v-card-title class="headline">{{ event.title }}</v-card-title>
+            <v-card-text>
+              <div class="mb-2" v-if="event.description">
+                <strong>Descrizione: </strong>
+                <span>{{ event.description }}</span>
+              </div>
+              <!-- If the event is marked as Santa Messa, the start date is fixed -->
+              <div class="mb-2" v-if="!event.is_holy_mass">
+                <strong>Data Inizio: </strong>
+                <span>
+                  {{ event.start_date }}
+                  <span v-if="event.start_time">
+                    - {{ formatTime(event.start_time) }}
+                  </span>
+                </span>
+              </div>
+              <div class="mb-2" v-else>
+                <strong>Data Inizio: </strong>
+                <span>
+                  {{ event.start_date }} (Impostata automaticamente per la Santa Messa)
+                  <span v-if="event.start_time">
+                    - {{ formatTime(event.start_time) }}
+                  </span>
+                </span>
+              </div>
+              <div class="mb-2" v-if="!event.is_holy_mass && event.end_date && event.end_date !== '9999-01-01'">
+                <strong>Data Fine: </strong>
+                <span>
+                  {{ event.end_date }}
+                  <span v-if="event.end_time">
+                    - {{ formatTime(event.end_time) }}
+                  </span>
+                </span>
+              </div>
+              <div class="mb-2" v-if="event.is_recurring && event.recurrence_pattern">
+                <strong>Ricorrenza: </strong>
+                <span>{{ event.recurrence_pattern }}</span>
+              </div>
+              <div class="mb-2">
+                <strong>Luogo: </strong>
+                <span>{{ getPlaceName(event.place_id) }}</span>
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-icon class="action-icon" @click="editEvent(event)">mdi-pencil</v-icon>
+              <v-icon class="action-icon" @click="deleteEvent(event.event_id)">mdi-delete</v-icon>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Dialog for Adding/Editing an Event -->
+      <v-dialog v-model:model-value="eventDialog" max-width="600">
+        <v-card>
+          <v-card-title class="text-center">{{ eventFormTitle }}</v-card-title>
           <v-card-text>
-            <div class="mb-2" v-if="event.description">
-              <strong>Descrizione: </strong>
-              <span>{{ event.description }}</span>
-            </div>
-            <!-- If the event is marked as Santa Messa, the start date is fixed -->
-            <div class="mb-2" v-if="!event.is_holy_mass">
-              <strong>Data Inizio: </strong>
-              <span>
-                {{ event.start_date }}
-                <span v-if="event.start_time">
-                  - {{ formatTime(event.start_time) }}
-                </span>
-              </span>
-            </div>
-            <div class="mb-2" v-else>
-              <strong>Data Inizio: </strong>
-              <span>
-                {{ event.start_date }} (Impostata automaticamente per la Santa Messa)
-                <span v-if="event.start_time">
-                  - {{ formatTime(event.start_time) }}
-                </span>
-              </span>
-            </div>
-            <div class="mb-2" v-if="!event.is_holy_mass && event.end_date && event.end_date !== '9999-01-01'">
-              <strong>Data Fine: </strong>
-              <span>
-                {{ event.end_date }}
-                <span v-if="event.end_time">
-                  - {{ formatTime(event.end_time) }}
-                </span>
-              </span>
-            </div>
-            <div class="mb-2" v-if="event.is_recurring && event.recurrence_pattern">
-              <strong>Ricorrenza: </strong>
-              <span>{{ event.recurrence_pattern }}</span>
-            </div>
-            <div class="mb-2">
-              <strong>Luogo: </strong>
-              <span>{{ getPlaceName(event.place_id) }}</span>
-            </div>
+            <v-form ref="eventForm" v-model="valid">
+              <v-text-field
+                  v-model="currentEvent.title"
+                  label="Titolo"
+                  required
+              ></v-text-field>
+              <v-textarea
+                  v-model="currentEvent.description"
+                  label="Descrizione"
+                  rows="3"
+              ></v-textarea>
+
+              <!-- Checkbox for Santa Messa -->
+              <v-checkbox
+                  v-model="currentEvent.is_holy_mass"
+                  label="Santa Messa"
+                  @change="handleHolyMassChange"
+              ></v-checkbox>
+
+              <!-- If NOT a Santa Messa, show date fields -->
+              <template v-if="!currentEvent.is_holy_mass">
+                <!-- Checkbox for Recurring Event -->
+                <v-checkbox
+                    v-model="currentEvent.is_recurring"
+                    label="Evento Ricorrente"
+                    @change="handleRecurringChange"
+                ></v-checkbox>
+
+                <div class="mb-2">
+                  <em>
+                    Il campo "Luogo libero" può non essere inserito e si riferisce ai luoghi che non sono stati aggiunti. Es. Evento in "Sila"
+                  </em>
+                </div>
+                <v-text-field
+                    v-model="currentEvent.place"
+                    label="Luogo libero"
+                ></v-text-field>
+
+                <v-text-field
+                    v-model="currentEvent.start_date"
+                    label="Data Inizio"
+                    type="date"
+                    required
+                ></v-text-field>
+                <v-text-field
+                    v-model="currentEvent.end_date"
+                    label="Data Fine"
+                    type="date"
+                ></v-text-field>
+              </template>
+              <!-- For Santa Messa, inform that start_date is fixed to today and end_date/end_time are default -->
+              <template v-else>
+                <div class="mb-2">
+                  <strong>Data Inizio: </strong>
+                  <span>{{ currentEvent.start_date }}</span>
+                </div>
+                <div class="mb-2">
+                  <em>
+                    Selezionando il flag "Santa Messa", la data d'inizio è impostata a oggi e la data di fine e l'ora di fine sono predefiniti.
+                  </em>
+                </div>
+              </template>
+
+              <!-- Ora Inizio deve essere visualizzata in formato "HH:MM" -->
+              <v-text-field
+                  v-model="currentEvent.start_time"
+                  label="Ora Inizio (HH:MM)"
+                  :rules="[validateTimeFormat]"
+                  required
+              ></v-text-field>
+
+              <!-- If event is recurring, show recurrence configuration -->
+              <template v-if="currentEvent.is_recurring">
+                <v-row>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                        v-model="recurrenceFrequency"
+                        :items="frequencyOptions"
+                        item-title="title"
+                        item-value="value"
+                        label="FREQ (Frequenza)"
+                        required
+                    ></v-select>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                        v-model="recurrenceByday"
+                        :items="dayOptions"
+                        item-title="title"
+                        item-value="value"
+                        label="BYDAY (Giorno della Settimana)"
+                        required
+                    ></v-select>
+                  </v-col>
+                </v-row>
+                <v-alert type="info" dense>
+                  La ricorrenza verrà impostata come: FREQ={{ recurrenceFrequency }};
+                  BYDAY={{ recurrenceByday }}.<br />
+                  Frequenze disponibili: Settimanale (WEEKLY), Giornaliero (DAILY), Mensile (MONTHLY).<br />
+                  I giorni sono rappresentati dalle prime due lettere in inglese, ad esempio: MO (Lunedì), TU (Martedì), WE (Mercoledì), TH (Giovedì), FR (Venerdì), SA (Sabato), SU (Domenica).
+                </v-alert>
+              </template>
+
+              <!-- Luogo -->
+              <v-select
+                  v-model="currentEvent.place_id"
+                  :items="places"
+                  item-title="name"
+                  item-value="place_id"
+                  label="Luogo"
+                  required
+              ></v-select>
+            </v-form>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-icon class="action-icon" @click="editEvent(event)">mdi-pencil</v-icon>
-            <v-icon class="action-icon" @click="deleteEvent(event.event_id)">mdi-delete</v-icon>
+            <v-btn color="brown darken-1" @click="closeEventDialog">Chiudi</v-btn>
+            <v-btn color="brown darken-1" @click="saveEvent">Salva</v-btn>
           </v-card-actions>
         </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Dialog for Adding/Editing an Event -->
-    <v-dialog v-model:model-value="eventDialog" max-width="600">
-      <v-card>
-        <v-card-title class="text-center">{{ eventFormTitle }}</v-card-title>
-        <v-card-text>
-          <v-form ref="eventForm" v-model="valid">
-            <v-text-field
-                v-model="currentEvent.title"
-                label="Titolo"
-                required
-            ></v-text-field>
-            <v-textarea
-                v-model="currentEvent.description"
-                label="Descrizione"
-                rows="3"
-            ></v-textarea>
-
-            <!-- Checkbox for Santa Messa -->
-            <v-checkbox
-                v-model="currentEvent.is_holy_mass"
-                label="Santa Messa"
-                @change="handleHolyMassChange"
-            ></v-checkbox>
-
-            <!-- If NOT a Santa Messa, show date fields -->
-            <template v-if="!currentEvent.is_holy_mass">
-              <!-- Checkbox for Recurring Event -->
-              <v-checkbox
-                  v-model="currentEvent.is_recurring"
-                  label="Evento Ricorrente"
-                  @change="handleRecurringChange"
-              ></v-checkbox>
-
-              <div class="mb-2">
-                <em>Il campo "Luogo libero" può non essere inserito e si riferesce ai luoghi che non sono stati aggiunti. Es. Evento in "Sila"</em>
-              </div>
-              <v-text-field
-                  v-model="currentEvent.place"
-                  label="Luogo libero "
-              ></v-text-field>
-
-              <v-text-field
-                  v-model="currentEvent.start_date"
-                  label="Data Inizio"
-                  type="date"
-                  required
-              ></v-text-field>
-              <v-text-field
-                  v-model="currentEvent.end_date"
-                  label="Data Fine"
-                  type="date"
-              ></v-text-field>
-            </template>
-            <!-- For Santa Messa, inform that start_date is fixed to today and end_date/end_time are default -->
-            <template v-else>
-              <div class="mb-2">
-                <strong>Data Inizio: </strong>
-                <span>{{ currentEvent.start_date }}</span>
-              </div>
-              <div class="mb-2">
-                <em>Selezionando il flag "Santa Messa", la data d'inizio è impostata a oggi e la data di fine e l'ora di fine sono predefiniti.</em>
-              </div>
-            </template>
-
-            <!-- Ora Inizio deve essere visualizzata in formato "HH:MM" -->
-            <v-text-field
-                v-model="currentEvent.start_time"
-                label="Ora Inizio (HH:MM)"
-                :rules="[validateTimeFormat]"
-                required
-            ></v-text-field>
-
-            <!-- If event is recurring, show recurrence configuration -->
-            <template v-if="currentEvent.is_recurring">
-              <v-row>
-                <v-col cols="12" sm="6">
-                  <v-select
-                      v-model="recurrenceFrequency"
-                      :items="frequencyOptions"
-                      item-title="title"
-                      item-value="value"
-                      label="FREQ (Frequenza)"
-                      required
-                  ></v-select>
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select
-                      v-model="recurrenceByday"
-                      :items="dayOptions"
-                      item-title="title"
-                      item-value="value"
-                      label="BYDAY (Giorno della Settimana)"
-                      required
-                  ></v-select>
-                </v-col>
-              </v-row>
-              <v-alert type="info" dense>
-                La ricorrenza verrà impostata come: FREQ={{ recurrenceFrequency }};BYDAY={{ recurrenceByday }}.<br />
-                Frequenze disponibili: Settimanale (WEEKLY), Giornaliero (DAILY), Mensile (MONTHLY).<br />
-                I giorni sono rappresentati dalle prime due lettere in inglese, ad esempio: MO (Lunedì), TU (Martedì), WE (Mercoledì), TH (Giovedì), FR (Venerdì), SA (Sabato), SU (Domenica).
-              </v-alert>
-            </template>
-
-            <!-- Luogo -->
-            <v-select
-                v-model="currentEvent.place_id"
-                :items="places"
-                item-title="name"
-                item-value="place_id"
-                label="Luogo"
-                required
-            ></v-select>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="brown darken-1" @click="closeEventDialog">Chiudi</v-btn>
-          <v-btn color="brown darken-1" @click="saveEvent">Salva</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      </v-dialog>
+    </div>
 
     <!-- Snackbar for Error Feedback -->
-    <v-snackbar v-model="errorSnackbar" timeout="5000" top>
+    <v-snackbar v-model="errorSnackbar" timeout="5000" top color="error">
       {{ errorText }}
       <template #actions>
-        <v-btn color="red" text="error" @click="errorSnackbar = false">
+        <v-btn color="white" text @click="errorSnackbar = false">
+          Chiudi
+        </v-btn>
+      </template>
+    </v-snackbar>
+
+    <!-- Snackbar for Success Feedback -->
+    <v-snackbar v-model="successSnackbar" timeout="5000" top color="success">
+      {{ successText }}
+      <template #actions>
+        <v-btn color="white" text @click="successSnackbar = false">
           Chiudi
         </v-btn>
       </template>
@@ -237,21 +254,20 @@ const dayOptions = [
   { value: 'SU', title: 'SU (Domenica)' }
 ]
 
-// Snackbar for error feedback
+// Snackbar for error and success feedback
 const errorSnackbar = ref(false)
 const errorText = ref('')
+const successSnackbar = ref(false)
+const successText = ref('')
 
 // Utility function to convert a time string to HH:MM:SS format for payloads
 const convertTimeForPayload = (timeStr) => {
-  // If the time is in HH:MM, append :00 to have HH:MM:SS
   if (/^\d{2}:\d{2}$/.test(timeStr)) {
     return `${timeStr}:00`
   }
-  // If already in HH:MM:SS, return as is
   if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) {
     return timeStr
   }
-  // Fallback using simple padding logic
   const timeParts = timeStr.split(':')
   if (timeParts.length === 2) {
     let [hh, mm] = timeParts
@@ -312,9 +328,8 @@ const getPlaceName = (placeId) => {
 // Handle changes when "Santa Messa" is toggled
 const handleHolyMassChange = () => {
   if (currentEvent.value.is_holy_mass) {
-    // For Santa Messa, fix the start_date to today and clear end date/time
     currentEvent.value.start_date = new Date().toISOString().slice(0, 10)
-    currentEvent.value.end_date = '9999-01-01' // default end date
+    currentEvent.value.end_date = '9999-01-01'
     currentEvent.value.end_time = ""
   }
 }
@@ -322,7 +337,6 @@ const handleHolyMassChange = () => {
 // Handle changes when "Evento Ricorrente" is toggled
 const handleRecurringChange = () => {
   if (!currentEvent.value.is_recurring) {
-    // Clear recurrence configuration if unchecked
     recurrenceFrequency.value = null
     recurrenceByday.value = null
     currentEvent.value.recurrence_pattern = ""
@@ -341,7 +355,6 @@ watch([recurrenceFrequency, recurrenceByday], () => {
 // Open dialog for a new event
 const openEventDialog = () => {
   currentEvent.value = {}
-  // Default values for a new event
   currentEvent.value.is_holy_mass = false
   currentEvent.value.is_recurring = false
   currentEvent.value.recurrence_pattern = ""
@@ -354,30 +367,28 @@ const closeEventDialog = () => {
   eventDialog.value = false
 }
 
-// Save event: adjust the start_time and end_time format before sending the payload
+// Save event: adjust time formats before sending the payload
 const saveEvent = async () => {
   if (!valid.value) return
-
-  // Adjust start_time: combine currentEvent.start_date with converted start_time
   if (currentEvent.value.start_time) {
     const startTimeConverted = convertTimeForPayload(currentEvent.value.start_time)
     currentEvent.value.start_time = `${currentEvent.value.start_date} ${startTimeConverted}`
   }
-
-  // Adjust end_time: if provided, combine currentEvent.end_date with converted end_time.
   if (currentEvent.value.end_time && currentEvent.value.end_date) {
     const endTimeConverted = convertTimeForPayload(currentEvent.value.end_time)
     currentEvent.value.end_time = `${currentEvent.value.end_date} ${endTimeConverted}`
   }
-
   try {
     if (currentEvent.value.event_id) {
       await EventsService.update(currentEvent.value.event_id, currentEvent.value)
+      successText.value = 'Evento aggiornato con successo.'
     } else {
       await EventsService.create(currentEvent.value)
+      successText.value = 'Evento creato con successo.'
     }
     await fetchEvents()
     closeEventDialog()
+    successSnackbar.value = true
   } catch (error) {
     errorText.value = 'Errore durante il salvataggio dell\'evento.'
     errorSnackbar.value = true
@@ -393,30 +404,27 @@ const validateTimeFormat = (value) => {
 // Open edit dialog with populated event data
 const editEvent = (event) => {
   currentEvent.value = { ...event }
-  // When editing, adjust start_time for the input field (display only "HH:MM")
   if (currentEvent.value.start_time) {
     const parts = currentEvent.value.start_time.split(" ")
     if (parts.length === 2) {
       currentEvent.value.start_time = parts[1].slice(0, 5)
     }
   }
-  // When editing, adjust end_time for the input field similarly
   if (currentEvent.value.end_time) {
     const parts = currentEvent.value.end_time.split(" ")
     if (parts.length === 2) {
       currentEvent.value.end_time = parts[1].slice(0, 5)
     }
   }
-  // If editing a recurring event, parse recurrence_pattern to set frequency and day
   if (currentEvent.value.is_recurring && currentEvent.value.recurrence_pattern) {
     const parts = currentEvent.value.recurrence_pattern.split(';')
     parts.forEach(part => {
-      const [key, value] = part.split('=')
+      const [key, val] = part.split('=')
       if (key === 'FREQ') {
-        recurrenceFrequency.value = value
+        recurrenceFrequency.value = val
       }
       if (key === 'BYDAY') {
-        recurrenceByday.value = value
+        recurrenceByday.value = val
       }
     })
   } else {
@@ -432,6 +440,8 @@ const deleteEvent = async (eventId) => {
   try {
     await EventsService.delete(eventId)
     await fetchEvents()
+    successText.value = 'Evento eliminato con successo.'
+    successSnackbar.value = true
   } catch (error) {
     errorText.value = 'Errore durante la cancellazione dell\'evento.'
     errorSnackbar.value = true
@@ -445,6 +455,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.relative-position {
+  position: relative;
+  min-height: 100vh;
+}
+.spinner-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 .title {
   font-weight: 600;
   font-size: 1.5rem;

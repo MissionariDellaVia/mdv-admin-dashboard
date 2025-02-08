@@ -1,5 +1,13 @@
 <template>
   <v-container fluid class="relative-position">
+    <!-- Global Alerts -->
+    <v-snackbar v-model="showSuccessAlert" color="green" timeout="3000" top right>
+      {{ successAlertMessage }}
+    </v-snackbar>
+    <v-snackbar v-model="showErrorAlert" color="red" timeout="3000" top right>
+      {{ errorAlertMessage }}
+    </v-snackbar>
+
     <!-- Spinner shown while overall loading is true -->
     <div v-if="loading" class="spinner-container">
       <v-progress-circular indeterminate size="64" color="primary" />
@@ -67,14 +75,19 @@
             <v-card-title class="text-center">Azioni rapide</v-card-title>
             <v-card-text>
               <v-row>
-                <v-col cols="12" sm="6">
+                <v-col cols="12" sm="4">
                   <v-btn color="primary" block @click="openGospelDialog">
                     Aggiungi Nuovo Vangelo
                   </v-btn>
                 </v-col>
-                <v-col cols="12" sm="6">
+                <v-col cols="12" sm="4">
                   <v-btn color="primary" block @click="openSaintDialog">
                     Aggiungi un Santo
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-btn color="primary" block @click="openEventDialog">
+                    Aggiungi Evento
                   </v-btn>
                 </v-col>
               </v-row>
@@ -179,6 +192,7 @@
                 <!-- Gospel Search/Select with v-autocomplete -->
                 <div class="mb-2">
                   <em>Scrivi il versetto del Vangelo da commentare, se è presente nel sistema comparirà nel menù a tendina. es. Mc 13,23</em>
+                  <em><br>Altrimenti utilizza le azioni rapide a l'apposito menù laterale per aggiungerne uno</em>
                 </div>
                 <v-autocomplete
                     v-model="selectedGospel"
@@ -196,6 +210,7 @@
                 <!-- New Autocomplete for fetching saint_id -->
                 <div class="mb-2">
                   <em>Scrivi il nome del Santo da ricercare, se è presente nel sistema comparirà nel menù a tendina. es. San Francesco</em>
+                  <em><br>Altrimenti utilizza le azioni rapide a l'apposito menù laterale per aggiungerne uno</em>
                 </div>
                 <v-autocomplete
                     class="mt-4"
@@ -213,6 +228,15 @@
 
                 <v-divider class="my-4"></v-divider>
 
+                <!-- Calendar and Liturgical Info -->
+                <v-text-field
+                    v-model="calendarDate"
+                    label="Data del commento"
+                    type="date"
+                    required
+                    :rules="[v => !!v || 'Data richiesta']"
+                ></v-text-field>
+
                 <!-- Comment Section -->
                 <v-textarea
                     v-model="commentText"
@@ -221,20 +245,22 @@
                     :rules="[v => !!v || 'Commento richiesto']"
                 ></v-textarea>
 
-                <!-- Calendar and Liturgical Info -->
+                <!-- Extra Section -->
+                <v-textarea
+                    v-model="extraInfo"
+                    label="Aggiungi Extra"
+                ></v-textarea>
+
+                <!-- Link Section -->
                 <v-text-field
-                    v-model="calendarDate"
-                    label="Data del Calendario"
-                    type="date"
-                    required
-                    :rules="[v => !!v || 'Data richiesta']"
+                    v-model="youtubeLink"
+                    label="Aggiungi un link"
+                    type="url"
                 ></v-text-field>
 
                 <v-text-field
                     v-model="liturgicalSeason"
                     label="Periodo Liturgico"
-                    required
-                    :rules="[v => !!v || 'Periodo liturgico richiesto']"
                 ></v-text-field>
 
                 <!-- Submit Button -->
@@ -343,6 +369,56 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Add/Edit Event Dialog -->
+    <v-dialog v-model:model-value="eventDialog" max-width="600px">
+      <v-card>
+        <v-card-title class="text-center my-5">
+          <span class="text-h5">Aggiungi Evento</span>
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="eventForm" v-model="valid">
+            <v-text-field
+                v-model="newEvent.title"
+                label="Titolo Evento"
+                required
+                :rules="[v => !!v || 'Titolo richiesto']"
+            ></v-text-field>
+            <v-text-field
+                v-model="newEvent.place"
+                label="Luogo"
+                required
+                :rules="[v => !!v || 'Luogo richiesto']"
+            ></v-text-field>
+            <v-text-field
+                v-model="newEvent.start_date"
+                label="Data Inizio"
+                type="date"
+                required
+                :rules="[v => !!v || 'Data richiesta']"
+            ></v-text-field>
+            <v-text-field
+                v-model="newEvent.start_time"
+                label="Ora Inizio"
+                type="time"
+                required
+                :rules="[v => !!v || 'Ora richiesta']"
+            ></v-text-field>
+            <v-textarea
+                v-model="newEvent.description"
+                label="Descrizione Evento"
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="brown darken-1" @click="closeEventDialog">Chiudi</v-btn>
+          <v-btn color="brown darken-1" :loading="savingEvent" @click="saveEvent">
+            Salva
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -367,12 +443,20 @@ const router = useRouter()
 const form = ref(null)
 const gospelForm = ref(null)
 const saintForm = ref(null)
+const eventForm = ref(null)
 const valid = ref(false)
 const loading = ref(true)
 const saving = ref(false)
 const savingGospel = ref(false)
 const savingSaint = ref(false)
+const savingEvent = ref(false)
 const loadingGospels = ref(false)
+
+// Alert refs for success and error notifications
+const showSuccessAlert = ref(false)
+const successAlertMessage = ref("")
+const showErrorAlert = ref(false)
+const errorAlertMessage = ref("")
 
 // Data refs for totals, events, gospels
 const totals = ref({
@@ -386,6 +470,8 @@ const gospels = ref([])
 const selectedGospel = ref(null)
 const searchGospel = ref('')
 const commentText = ref('')
+const extraInfo = ref('')
+const youtubeLink = ref('')
 const calendarDate = ref('')
 const liturgicalSeason = ref('')
 
@@ -405,8 +491,10 @@ const carouselIndex = ref(0)
 // Dialog refs
 const gospelDialog = ref(false)
 const saintDialog = ref(false)
+const eventDialog = ref(false)
 const newGospel = ref({})
 const newSaint = ref({})
+const newEvent = ref({})
 const formTitle = ref('')
 
 // Fetch totals
@@ -439,8 +527,7 @@ const handleSearch = async (val) => {
   searchTimeout = setTimeout(async () => {
     loadingGospels.value = true
     try {
-      const response = await GospelsService.search(val)
-      gospels.value = response
+      gospels.value = await GospelsService.search(val)
     } catch (error) {
       console.error('Search error:', error)
     } finally {
@@ -459,8 +546,7 @@ const handleSaintSearch = async (val) => {
   saintSearchTimeout = setTimeout(async () => {
     loadingSaints.value = true
     try {
-      const response = await SaintsService.search(val)
-      saints.value = response
+      saints.value = await SaintsService.search(val)
     } catch (error) {
       console.error('Saint search error:', error)
     } finally {
@@ -491,12 +577,12 @@ const fetchPlaces = async () => {
 
 // Navigation helper
 const navigateTo = (routeName) => {
-  router.push({name: routeName})
+  router.push({ name: routeName })
 }
 
 // Date formatter
 const formatDate = (dateStr) => {
-  const options = {year: 'numeric', month: 'short', day: 'numeric'}
+  const options = { year: 'numeric', month: 'short', day: 'numeric' }
   return new Date(dateStr).toLocaleDateString(undefined, options)
 }
 
@@ -528,11 +614,15 @@ const saveGospel = async () => {
   if (!gospelForm.value?.validate()) return
   savingGospel.value = true
   try {
-    await GospelsService.create({...newGospel.value})
+    await GospelsService.create({ ...newGospel.value })
     await handleSearch(searchGospel.value)
     closeGospelDialog()
+    successAlertMessage.value = "Vangelo salvato con successo!"
+    showSuccessAlert.value = true
   } catch (error) {
     console.error('Error saving gospel:', error)
+    errorAlertMessage.value = "Errore durante il salvataggio del vangelo."
+    showErrorAlert.value = true
   } finally {
     savingGospel.value = false
   }
@@ -553,12 +643,15 @@ const saveSaint = async () => {
   if (!saintForm.value?.validate()) return
   savingSaint.value = true
   try {
-    await SaintsService.create({...newSaint.value})
-    // Refresh totals and saints autocomplete data if needed
+    await SaintsService.create({ ...newSaint.value })
     await fetchTotals()
     closeSaintDialog()
+    successAlertMessage.value = "Santo salvato con successo!"
+    showSuccessAlert.value = true
   } catch (error) {
     console.error('Error saving saint:', error)
+    errorAlertMessage.value = "Errore durante il salvataggio del santo."
+    showErrorAlert.value = true
   } finally {
     savingSaint.value = false
   }
@@ -573,17 +666,50 @@ const saveGospelWay = async () => {
       calendar_date: calendarDate.value,
       gospel_id: selectedGospel.value,
       liturgical_season: liturgicalSeason.value,
-      created_by: currentUser.value,
-      created_at: currentDateTime.value,
       comment: commentText.value,
+      extra_info: extraInfo.value,
+      youtube_link: youtubeLink.value,
       saint_id: selectedSaintForComment.value
     }
     await GospelWayService.create(payload)
     form.value?.reset()
+    successAlertMessage.value = "Commento salvato con successo!"
+    showSuccessAlert.value = true
   } catch (error) {
     console.error('Error saving gospel way:', error)
+    errorAlertMessage.value = "Errore durante il salvataggio del commento."
+    showErrorAlert.value = true
   } finally {
     saving.value = false
+  }
+}
+
+// Dialog handlers for Event Dialog
+const openEventDialog = () => {
+  newEvent.value = {}
+  eventDialog.value = true
+}
+const closeEventDialog = () => {
+  eventDialog.value = false
+  newEvent.value = {}
+}
+
+// Save new Event (via dialog)
+const saveEvent = async () => {
+  if (!eventForm.value?.validate()) return
+  savingEvent.value = true
+  try {
+    await EventsService.create({ ...newEvent.value })
+    await fetchRecentEvents()
+    closeEventDialog()
+    successAlertMessage.value = "Evento salvato con successo!"
+    showSuccessAlert.value = true
+  } catch (error) {
+    console.error('Error saving event:', error)
+    errorAlertMessage.value = "Errore durante il salvataggio dell'evento."
+    showErrorAlert.value = true
+  } finally {
+    savingEvent.value = false
   }
 }
 

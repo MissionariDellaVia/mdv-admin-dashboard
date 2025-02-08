@@ -39,11 +39,12 @@
         </template>
         <template v-slot:item.comments="{ item }">
           <span v-if="item.comments.length === 0">Nessun commento</span>
-          <span v-else @click="openCommentsDialog(item.comments)" style="cursor: pointer;" @mouseover="hover = true" @mouseleave="hover = false" :style="{ color: hover ? 'saddlebrown' : 'inherit' }">{{ item.comments.length }} commenti</span>
+          <span v-else @click="openCommentsDialog(item.comments)" style="cursor: pointer;" @mouseover="hover = true" @mouseleave="hover = false" :style="{ color: hover ? 'saddlebrown' : 'inherit' }">
+            {{ item.comments.length }} commenti
+          </span>
         </template>
         <template v-slot:bottom>
           <v-toolbar flat>
-            <!-- Items per page selector -->
             <span class="ml-4">
               {{ (page - 1) * itemsPerPage + 1 }}-{{ Math.min(page * itemsPerPage, totalItems) }} di {{ totalItems }}
             </span>
@@ -62,7 +63,7 @@
     <v-dialog v-model="commentsDialog" max-width="800px">
       <v-card>
         <v-card-title class="text-center my-5">
-          <span class="text-h5 ">Commenti</span>
+          <span class="text-h5">Commenti</span>
         </v-card-title>
         <v-card-text>
           <v-row>
@@ -90,7 +91,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="brown darken-1" text="Close" @click="closeCommentsDialog">Chiudi</v-btn>
+          <v-btn color="brown darken-1" text @click="closeCommentsDialog">Chiudi</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -103,7 +104,6 @@
         </v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid">
-            <!-- Add form fields here -->
             <v-text-field
                 v-model="editedGospel.evangelist"
                 label="Evangelista"
@@ -130,17 +130,35 @@
                 :rules="[rules.required]"
                 required
             ></v-text-field>
-
-            <!-- Add other fields similarly -->
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="brown darken-1" text="Cancel" @click="closeDialog">Chiudi</v-btn>
-          <v-btn color="brown darken-1" text="Save" @click="saveSaint">Salva</v-btn>
+          <v-btn color="brown darken-1" text @click="closeDialog">Chiudi</v-btn>
+          <v-btn color="brown darken-1" text @click="saveGospel">Salva</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Snackbar for Error Feedback -->
+    <v-snackbar v-model="errorSnackbar" timeout="5000" top color="error">
+      {{ errorText }}
+      <template #actions>
+        <v-btn color="white" text @click="errorSnackbar = false">
+          Chiudi
+        </v-btn>
+      </template>
+    </v-snackbar>
+
+    <!-- Snackbar for Success Feedback -->
+    <v-snackbar v-model="successSnackbar" timeout="5000" top color="success">
+      {{ successText }}
+      <template #actions>
+        <v-btn color="white" text="" @click="successSnackbar = false">
+          Chiudi
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -163,11 +181,6 @@ export default {
         { title: 'Commenti', value: 'comments', sortable: false },
         { title: '', value: 'actions', sortable: false },
       ],
-      commentsHeaders: [
-        { title: 'Commento', value: 'comment_text', width: '33%' },
-        { title: 'Extra', value: 'extra_info', width: '33%' },
-        { title: 'Link', value: 'youtube_link', width: '33%' },
-      ],
       search: '',
       dialog: false,
       editedGospel: {},
@@ -180,6 +193,11 @@ export default {
       page: 1,
       itemsPerPage: 30,
       totalItems: 0,
+      // Snackbars for feedback
+      errorSnackbar: false,
+      errorText: '',
+      successSnackbar: false,
+      successText: ''
     }
   },
   created() {
@@ -190,10 +208,13 @@ export default {
       this.isLoading = true;
       GospelsService.getAll(this.page, this.itemsPerPage)
           .then(response => {
-            this.gospels = response.data
-            this.totalItems = response.total
+            this.gospels = response.data;
+            // Assuming the API response has a total count attribute
+            this.totalItems = response.total;
           })
           .catch(error => {
+            this.errorText = 'Errore durante il caricamento dei vangeli.'
+            this.errorSnackbar = true;
             console.error(error)
           })
           .finally(() => {
@@ -204,26 +225,29 @@ export default {
       this.page = newPage;
       this.fetchGospels();
     },
-
     openDialog() {
-      this.editedGospel = {}
-      this.formTitle = 'Aggiungi Vangelo'
-      this.dialog = true
+      this.editedGospel = {};
+      this.formTitle = 'Aggiungi Vangelo';
+      this.dialog = true;
     },
     editGospel(item) {
-      this.editedGospel = { ...item }
-      this.formTitle = 'Modifica Vangelo'
-      this.dialog = true
+      this.editedGospel = {...item};
+      this.formTitle = 'Modifica Vangelo';
+      this.dialog = true;
     },
     deleteGospel(id) {
       if (confirm('Are you sure you want to delete this gospel?')) {
         GospelsService.delete(id)
             .then(() => {
-              this.fetchGospels()
+              this.successText = 'Gospel eliminato con successo.';
+              this.successSnackbar = true;
+              this.fetchGospels();
             })
             .catch(error => {
+              this.errorText = 'Errore durante la cancellazione del vangelo.';
+              this.errorSnackbar = true;
               console.error(error)
-            })
+            });
       }
     },
     saveGospel() {
@@ -232,34 +256,42 @@ export default {
           // Update existing gospel
           GospelsService.update(this.editedGospel.id, this.editedGospel)
               .then(() => {
-                this.fetchGospels()
-                this.closeDialog()
+                this.successText = 'Gospel aggiornato con successo.';
+                this.successSnackbar = true;
+                this.fetchGospels();
+                this.closeDialog();
               })
               .catch(error => {
+                this.errorText = 'Errore durante l\'aggiornamento del vangelo.';
+                this.errorSnackbar = true;
                 console.error(error)
-              })
+              });
         } else {
           // Create new gospel
           GospelsService.create(this.editedGospel)
               .then(() => {
-                this.fetchGospels()
-                this.closeDialog()
+                this.successText = 'Gospel creato con successo.';
+                this.successSnackbar = true;
+                this.fetchGospels();
+                this.closeDialog();
               })
               .catch(error => {
+                this.errorText = 'Errore durante la creazione del vangelo.';
+                this.errorSnackbar = true;
                 console.error(error)
-              })
+              });
         }
       }
     },
     closeDialog() {
-      this.dialog = false
+      this.dialog = false;
     },
     openCommentsDialog(comments) {
-      this.comments = comments
-      this.commentsDialog = true
+      this.comments = comments;
+      this.commentsDialog = true;
     },
     closeCommentsDialog() {
-      this.commentsDialog = false
+      this.commentsDialog = false;
     },
   },
 }
