@@ -1,24 +1,23 @@
-// src/services/TextContentsService.js
-import axios from 'axios'
+import axiosInstance from './authInstance';
 
-const API_URL = 'http://localhost:8000/api/mdv/v1/content/pages'
+const API_URL = '/mdv/v1/content/pages';
 
 class TextContentsService {
     getAll() {
-        return axios.get(API_URL)
+        return axiosInstance.get(API_URL);
     }
 
     create(data) {
-        return axios.post(API_URL, data)
+        return axiosInstance.post(API_URL, data);
     }
 
     update(id, data) {
-        return axios.put(`${API_URL}/${id}`, data)
+        return axiosInstance.put(`${API_URL}/${id}`, data);
     }
 
     delete(id) {
-        return axios.delete(`${API_URL}/${id}`)
+        return axiosInstance.delete(`${API_URL}/${id}`);
     }
 }
 
-export default new TextContentsService()
+export default new TextContentsService();
