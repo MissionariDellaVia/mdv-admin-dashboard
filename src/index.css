@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@300;400;500;600;700&family=Questrial&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* MdV Color Palette */
+    /* color1: #281D02 - Marrone scurissimo */
+    /* color2: #472b21 - Marrone scuro */
+    /* color3: #6e4f3a - Marrone medio (theme) */
+    /* color4: #A67D51 - Marrone chiaro / oro */
+    /* color5: #d3b282 - Beige / crema */
+    /* color6: #908286 - Grigio */
+    
+    --background: 37 47% 92%; /* Crema chiaro basato su color5 */
+    --foreground: 24 31% 25%; /* Basato su color3 scuro */
+
+    --card: 37 47% 95%;
+    --card-foreground: 24 31% 20%;
+
+    --popover: 37 47% 97%;
+    --popover-foreground: 24 31% 20%;
+
+    --primary: 24 31% 33%; /* color3 - Marrone medio */
+    --primary-foreground: 37 47% 95%;
+
+    --secondary: 37 47% 85%;
+    --secondary-foreground: 24 31% 25%;
+
+    --muted: 37 30% 90%;
+    --muted-foreground: 340 3% 45%; /* Basato su color6 */
+
+    --accent: 31 36% 48%; /* color4 - Marrone chiaro */
+    --accent-foreground: 43 93% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 37 30% 80%;
+    --input: 37 30% 80%;
+    --ring: 24 31% 33%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 15 37% 12%; /* Basato su color2 */
+    --foreground: 37 47% 85%;
+
+    --card: 15 37% 15%;
+    --card-foreground: 37 47% 90%;
+
+    --popover: 15 37% 15%;
+    --popover-foreground: 37 47% 90%;
+
+    --primary: 31 36% 48%; /* color4 */
+    --primary-foreground: 43 93% 8%;
+
+    --secondary: 15 25% 22%;
+    --secondary-foreground: 37 47% 85%;
+
+    --muted: 15 20% 20%;
+    --muted-foreground: 340 3% 60%;
+
+    --accent: 24 31% 33%;
+    --accent-foreground: 37 47% 95%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 15 25% 25%;
+    --input: 15 25% 25%;
+    --ring: 31 36% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-mdv-medium;
+    font-weight: 600;
+  }
+}
+
+/* Prose styling for rich text editor */
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1 {
+  @apply text-2xl font-bold mb-4 text-mdv-medium;
+}
+
+.prose h2 {
+  @apply text-xl font-semibold mb-3 text-mdv-medium;
+}
+
+.prose h3 {
+  @apply text-lg font-medium mb-2 text-mdv-medium;
+}
+
+.prose p {
+  @apply mb-3 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-3;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-3;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-mdv-light pl-4 italic my-4 text-muted-foreground;
+}
+
+.prose a {
+  @apply text-mdv-light underline hover:text-mdv-medium;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-mdv-cream rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-mdv-light;
+}
+
+/* Gospel preview styling */
+.gospel-preview {
+  @apply prose;
+  color: var(--mdv-cream);
+}
+
+.gospel-preview p {
+  @apply text-mdv-cream leading-relaxed;
+}

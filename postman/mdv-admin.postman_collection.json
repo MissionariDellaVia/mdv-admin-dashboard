@@ -1,0 +1,561 @@
+{
+  "info": {
+    "name": "MdV Admin - Supabase API",
+    "description": "Collection per testare le API REST di Supabase per il progetto MdV Admin (Via del Vangelo)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://ixfsowqvlfdqwpkzdyye.supabase.co/rest/v1",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "YOUR_SUPABASE_ANON_KEY",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "apikey",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Gospel Daily",
+      "item": [
+        {
+          "name": "GET - Lista paginata",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Prefer",
+                "value": "count=exact"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily?select=*,gospel:gospels(*),comment_sections(*)&order=date.desc&limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"],
+              "query": [
+                { "key": "select", "value": "*,gospel:gospels(*),comment_sections(*)" },
+                { "key": "order", "value": "date.desc" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Singolo per ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily?id=eq.1&select=*,gospel:gospels(*),comment_sections(*),media(*)",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"],
+              "query": [
+                { "key": "id", "value": "eq.1" },
+                { "key": "select", "value": "*,gospel:gospels(*),comment_sections(*),media(*)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Per data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily?date=eq.2025-12-10&select=*,gospel:gospels(*),comment_sections(*),media(*)",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"],
+              "query": [
+                { "key": "date", "value": "eq.2025-12-10" },
+                { "key": "select", "value": "*,gospel:gospels(*),comment_sections(*),media(*)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Ricerca per santi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily?saints=ilike.*natale*&select=*",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"],
+              "query": [
+                { "key": "saints", "value": "ilike.*natale*" },
+                { "key": "select", "value": "*" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Crea nuovo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-12-25\",\n  \"gospel_id\": 1,\n  \"saints\": \"Natale del Signore\",\n  \"is_published\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"]
+            }
+          }
+        },
+        {
+          "name": "PATCH - Aggiorna",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"saints\": \"Santo Stefano\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily?id=eq.1",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"],
+              "query": [
+                { "key": "id", "value": "eq.1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE - Elimina",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospel_daily?id=eq.9999",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospel_daily"],
+              "query": [
+                { "key": "id", "value": "eq.9999" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gospels",
+      "item": [
+        {
+          "name": "GET - Lista paginata",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Prefer",
+                "value": "count=exact"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospels?select=*&order=reference.asc&limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospels"],
+              "query": [
+                { "key": "select", "value": "*" },
+                { "key": "order", "value": "reference.asc" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Singolo per ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospels?id=eq.1&select=*",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospels"],
+              "query": [
+                { "key": "id", "value": "eq.1" },
+                { "key": "select", "value": "*" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Ricerca per evangelista",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospels?evangelist=eq.Giovanni&select=*",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospels"],
+              "query": [
+                { "key": "evangelist", "value": "eq.Giovanni" },
+                { "key": "select", "value": "*" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Ricerca per riferimento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gospels?reference=ilike.*luca*&select=*",
+              "host": ["{{baseUrl}}"],
+              "path": ["gospels"],
+              "query": [
+                { "key": "reference", "value": "ilike.*luca*" },
+                { "key": "select", "value": "*" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comment Sections",
+      "item": [
+        {
+          "name": "GET - Per gospel_daily_id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comment_sections?gospel_daily_id=eq.1&select=*&order=sort_order.asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["comment_sections"],
+              "query": [
+                { "key": "gospel_daily_id", "value": "eq.1" },
+                { "key": "select", "value": "*" },
+                { "key": "order", "value": "sort_order.asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Crea sezione",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gospel_daily_id\": 1,\n  \"section_type\": \"main\",\n  \"content\": \"<p>Contenuto del commento...</p>\",\n  \"content_format\": \"html\",\n  \"sort_order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comment_sections",
+              "host": ["{{baseUrl}}"],
+              "path": ["comment_sections"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "item": [
+        {
+          "name": "GET - Per gospel_daily_id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/media?gospel_daily_id=eq.1&select=*",
+              "host": ["{{baseUrl}}"],
+              "path": ["media"],
+              "query": [
+                { "key": "gospel_daily_id", "value": "eq.1" },
+                { "key": "select", "value": "*" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Aggiungi video YouTube",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gospel_daily_id\": 1,\n  \"type\": \"video\",\n  \"url\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\",\n  \"title\": \"Video di esempio\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/media",
+              "host": ["{{baseUrl}}"],
+              "path": ["media"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Seeds",
+      "item": [
+        {
+          "name": "GET - Lista tutti",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/seeds?select=*&order=created_at.desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["seeds"],
+              "query": [
+                { "key": "select", "value": "*" },
+                { "key": "order", "value": "created_at.desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Solo attivi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/seeds?is_active=eq.true&select=*",
+              "host": ["{{baseUrl}}"],
+              "path": ["seeds"],
+              "query": [
+                { "key": "is_active", "value": "eq.true" },
+                { "key": "select", "value": "*" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST - Crea seed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verse_text\": \"Io sono la via, la verità e la vita\",\n  \"reference\": \"Giovanni 14,6\",\n  \"category\": \"fede\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/seeds",
+              "host": ["{{baseUrl}}"],
+              "path": ["seeds"]
+            }
+          }
+        },
+        {
+          "name": "PATCH - Toggle attivo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/seeds?id=eq.1",
+              "host": ["{{baseUrl}}"],
+              "path": ["seeds"],
+              "query": [
+                { "key": "id", "value": "eq.1" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RPC Functions",
+      "item": [
+        {
+          "name": "POST - Get Random Seed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rpc/get_random_seed",
+              "host": ["{{baseUrl}}"],
+              "path": ["rpc", "get_random_seed"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
