@@ -31,8 +31,7 @@ serve(async (req) => {
       .from("gospel_daily")
       .select("saints, liturgical_season")
       .eq("date", date)
-      .eq("is_published", true)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return new Response(

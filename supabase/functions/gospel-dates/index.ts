@@ -18,11 +18,10 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Query all published dates
+    // Query all available dates
     const { data, error } = await supabaseClient
       .from("gospel_daily")
       .select("date")
-      .eq("is_published", true)
       .order("date", { ascending: false });
 
     if (error) {

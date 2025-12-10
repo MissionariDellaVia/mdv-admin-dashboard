@@ -20,7 +20,6 @@ serve(async (req) => {
     const { data, error } = await supabaseClient
       .from("gospel_daily")
       .select("date")
-      .eq("is_published", true)
       .order("date", { ascending: false });
 
     if (error) {

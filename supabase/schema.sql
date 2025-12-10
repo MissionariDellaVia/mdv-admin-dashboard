@@ -81,6 +81,7 @@ CREATE TABLE seeds (
 -- ============================================
 
 CREATE INDEX idx_gospel_daily_date ON gospel_daily(date);
+CREATE INDEX idx_gospel_daily_gospel_id ON gospel_daily(gospel_id);
 CREATE INDEX idx_gospel_daily_published ON gospel_daily(is_published);
 CREATE INDEX idx_comment_sections_daily ON comment_sections(gospel_daily_id);
 CREATE INDEX idx_comment_sections_order ON comment_sections(gospel_daily_id, sort_order);

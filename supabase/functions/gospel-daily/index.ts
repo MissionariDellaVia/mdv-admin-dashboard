@@ -37,6 +37,7 @@ interface GospelDailyResponseV2 {
     date: string;
     saints: string;
     excerpt: string;
+    videos: string[];
   }>;
 }
 
@@ -127,7 +128,7 @@ serve(async (req) => {
         media(id, type, url, alt_text)
       `)
       .eq("date", date)
-      .single();
+      .maybeSingle();
 
     if (error || !gospelDaily) {
       return new Response(
@@ -163,7 +164,8 @@ serve(async (req) => {
         id,
         date,
         saints,
-        comment_sections(section_type, content)
+        comment_sections(section_type, content),
+        media(type, url)
       `)
       .eq("gospel_id", gospelDaily.gospel_id)
       .neq("date", date)
@@ -174,13 +176,23 @@ serve(async (req) => {
       const entryMain = entry.comment_sections?.find(
         (c: any) => c.section_type === "main"
       );
+      const entryVideos = (entry.media || [])
+        .filter((m: any) => m.type === "video")
+        .map((m: any) => m.url);
       return {
         id: entry.id,
         date: entry.date,
         saints: entry.saints || "",
         excerpt: entryMain?.content ? truncate(entryMain.content, 150) : "",
+        videos: entryVideos,
       };
     });
+
+    // Collect all videos (today + related)
+    const allVideos = [
+      ...videos,
+      ...related.flatMap((r: any) => r.videos || [])
+    ];
 
     // Build response based on version
     let response: GospelDailyResponseV1 | GospelDailyResponseV2;
@@ -225,7 +237,7 @@ serve(async (req) => {
           reflection: reflectionComment?.content || null,
         },
         media: {
-          videos,
+          videos: allVideos,
           images,
         },
         related,

@@ -11,6 +11,11 @@
       "type": "string"
     },
     {
+      "key": "functionsUrl",
+      "value": "https://ixfsowqvlfdqwpkzdyye.supabase.co/functions/v1",
+      "type": "string"
+    },
+    {
       "key": "apiKey",
       "value": "YOUR_SUPABASE_ANON_KEY",
       "type": "string"
@@ -553,6 +558,98 @@
               "host": ["{{baseUrl}}"],
               "path": ["rpc", "get_random_seed"]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edge Functions (Frontend API)",
+      "description": "API ottimizzate per il frontend pubblico Via del Vangelo. Richiedono deploy delle Edge Functions su Supabase.",
+      "item": [
+        {
+          "name": "Gospel Daily - Vangelo del giorno",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{functionsUrl}}/gospel-daily?date=2024-12-10",
+              "host": ["{{functionsUrl}}"],
+              "path": ["gospel-daily"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2024-12-10",
+                  "description": "Data in formato YYYY-MM-DD"
+                }
+              ]
+            },
+            "description": "Ritorna il vangelo del giorno completo con commenti, video e voci correlate.\n\nResponse:\n```json\n{\n  \"today\": {\n    \"evangelist\": \"Matteo\",\n    \"textRef\": \"Mt 18,12-14\",\n    \"sacred_texts\": \"Lettura del Vangelo\",\n    \"text\": \"In quel tempo...\",\n    \"comment\": \"<p>Commento...</p>\",\n    \"extra\": \"<p>Riflessione...</p>\",\n    \"video\": \"https://youtube.com/...\"\n  },\n  \"connected\": [...],\n  \"videos\": [...]\n}\n```"
+          }
+        },
+        {
+          "name": "Gospel Info - Info rapida giorno",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{functionsUrl}}/gospel-info?date=2024-12-10",
+              "host": ["{{functionsUrl}}"],
+              "path": ["gospel-info"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2024-12-10",
+                  "description": "Data in formato YYYY-MM-DD"
+                }
+              ]
+            },
+            "description": "Ritorna solo santi e tempo liturgico per una data.\n\nResponse:\n```json\n{\n  \"saints\": \"Santa Eulalia\",\n  \"liturgy\": \"Avvento\"\n}\n```"
+          }
+        },
+        {
+          "name": "Gospel Dates - Date disponibili",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{functionsUrl}}/gospel-dates",
+              "host": ["{{functionsUrl}}"],
+              "path": ["gospel-dates"]
+            },
+            "description": "Ritorna l'elenco di tutte le date pubblicate (ordine decrescente).\n\nResponse:\n```json\n[\"2024-12-10\", \"2024-12-09\", \"2024-12-08\", ...]\n```"
+          }
+        },
+        {
+          "name": "Random Seed - Versetto random",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{functionsUrl}}/random-seed",
+              "host": ["{{functionsUrl}}"],
+              "path": ["random-seed"]
+            },
+            "description": "Ritorna un versetto casuale attivo (funzione 'Semino').\n\nResponse:\n```json\n{\n  \"id\": 5,\n  \"text\": \"Io sono la via, la verità e la vita\",\n  \"reference\": \"Gv 14,6\",\n  \"category\": \"Gesù\"\n}\n```"
           }
         }
       ]
