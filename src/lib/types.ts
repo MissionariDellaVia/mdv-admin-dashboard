@@ -94,3 +94,53 @@ export interface SeedFormData {
   category?: string;
   is_active?: boolean;
 }
+
+// LOCATIONS
+
+export interface LocationInfo {
+  id: number;
+  location_id: number;
+  title: string | null;
+  body: string;
+  images: string[];
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Location {
+  id: number;
+  slug: string;
+  name: string;
+  lang: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  cover_image: string | null;
+  intro: string | null;
+  position: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  location_info?: LocationInfo[];
+}
+
+export interface LocationFormData {
+  slug: string;
+  name: string;
+  lang: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  cover_image?: string | null;
+  intro?: string | null;
+  position?: number;
+  is_published?: boolean;
+}
+
+export interface LocationInfoFormData {
+  title?: string | null;
+  body: string;
+  images?: string[];
+  position?: number;
+}
