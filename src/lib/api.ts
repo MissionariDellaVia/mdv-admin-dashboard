@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { compressImage } from './image';
 import type {
   Gospel,
   GospelDaily,
@@ -459,9 +460,10 @@ export const locationsApi = {
     if (error) throw error;
   },
   async uploadImage(file: File, slug: string) {
-    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const optimized = await compressImage(file);
+    const cleanName = optimized.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = `${slug}/${Date.now()}_${cleanName}`;
-    const { error } = await supabase.storage.from('location-media').upload(path, file);
+    const { error } = await supabase.storage.from('location-media').upload(path, optimized, { contentType: optimized.type });
     if (error) throw error;
     const { data } = supabase.storage.from('location-media').getPublicUrl(path);
     return data.publicUrl;
