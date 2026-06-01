@@ -77,7 +77,7 @@ function App() {
               <Route path="/seeds/:id" element={<SeedCreate />} />
               <Route path="/locations" element={<LocationList />} />
               <Route path="/locations/new" element={<LocationEdit />} />
-              <Route path="/locations/:id" element={<LocationEdit />} />
+              <Route path="/locations/:slug" element={<LocationEdit />} />
             </Route>
           </Route>
         </Routes>
