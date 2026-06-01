@@ -1,14 +1,18 @@
 import { supabase } from './supabase';
-import type { 
-  Gospel, 
-  GospelDaily, 
-  CommentSection, 
-  Media, 
+import type {
+  Gospel,
+  GospelDaily,
+  CommentSection,
+  Media,
   Seed,
   GospelDailyFormData,
   CommentSectionFormData,
   GospelFormData,
-  SeedFormData
+  SeedFormData,
+  Location,
+  LocationFormData,
+  LocationInfo,
+  LocationInfoFormData
 } from './types';
 
 // GOSPELS API
@@ -424,4 +428,60 @@ export const seedsApi = {
     if (error) throw error;
     return data?.[0] as Seed | null;
   }
+};
+
+// LOCATIONS API
+export const locationsApi = {
+  async getAll(lang?: string) {
+    let q = supabase.from('locations').select('*, location_info(*)').order('position', { ascending: true });
+    if (lang) q = q.eq('lang', lang);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data as Location[];
+  },
+  async getById(id: number) {
+    const { data, error } = await supabase.from('locations').select('*, location_info(*)').eq('id', id).single();
+    if (error) throw error;
+    return data as Location;
+  },
+  async create(location: LocationFormData) {
+    const { data, error } = await supabase.from('locations').insert([location]).select().single();
+    if (error) throw error;
+    return data as Location;
+  },
+  async update(id: number, location: Partial<LocationFormData>) {
+    const { data, error } = await supabase.from('locations').update(location).eq('id', id).select().single();
+    if (error) throw error;
+    return data as Location;
+  },
+  async delete(id: number) {
+    const { error } = await supabase.from('locations').delete().eq('id', id);
+    if (error) throw error;
+  },
+  async uploadImage(file: File, slug: string) {
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${slug}/${Date.now()}_${cleanName}`;
+    const { error } = await supabase.storage.from('location-media').upload(path, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from('location-media').getPublicUrl(path);
+    return data.publicUrl;
+  },
+};
+
+// LOCATION INFO API
+export const locationInfoApi = {
+  async create(locationId: number, info: LocationInfoFormData) {
+    const { data, error } = await supabase.from('location_info').insert([{ ...info, location_id: locationId }]).select().single();
+    if (error) throw error;
+    return data as LocationInfo;
+  },
+  async update(id: number, info: Partial<LocationInfoFormData>) {
+    const { data, error } = await supabase.from('location_info').update(info).eq('id', id).select().single();
+    if (error) throw error;
+    return data as LocationInfo;
+  },
+  async delete(id: number) {
+    const { error } = await supabase.from('location_info').delete().eq('id', id);
+    if (error) throw error;
+  },
 };
