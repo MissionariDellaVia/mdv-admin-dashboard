@@ -20,8 +20,8 @@ const schema = z.object({
   slug: z.string().min(1, 'Slug richiesto').regex(/^[a-z0-9-]+$/, 'Solo minuscole, numeri e trattini'),
   lang: z.string().min(2),
   address: z.string().optional(),
-  latitude: z.preprocess((v) => (v === '' || v == null ? null : Number(v)), z.number().nullable().optional()),
-  longitude: z.preprocess((v) => (v === '' || v == null ? null : Number(v)), z.number().nullable().optional()),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
   intro: z.string().optional(),
   is_published: z.boolean().optional(),
 });
@@ -42,8 +42,7 @@ export function LocationEdit() {
   });
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema),
     defaultValues: { lang: 'it', is_published: true },
   });
   const isPublished = watch('is_published');
@@ -134,11 +133,11 @@ export function LocationEdit() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="latitude">Latitudine</Label>
-                <Input id="latitude" type="number" step="any" {...register('latitude')} placeholder="39.79" />
+                <Input id="latitude" type="number" step="any" {...register('latitude', { setValueAs: (v) => (v === '' || v === null || v === undefined ? null : Number(v)) })} placeholder="39.79" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="longitude">Longitudine</Label>
-                <Input id="longitude" type="number" step="any" {...register('longitude')} placeholder="16.32" />
+                <Input id="longitude" type="number" step="any" {...register('longitude', { setValueAs: (v) => (v === '' || v === null || v === undefined ? null : Number(v)) })} placeholder="16.32" />
               </div>
             </div>
             <div className="space-y-2">
