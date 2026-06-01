@@ -20,8 +20,8 @@ const schema = z.object({
   slug: z.string().min(1, 'Slug richiesto').regex(/^[a-z0-9-]+$/, 'Solo minuscole, numeri e trattini'),
   lang: z.string().min(2),
   address: z.string().optional(),
-  latitude: z.coerce.number().optional().nullable(),
-  longitude: z.coerce.number().optional().nullable(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
   intro: z.string().optional(),
   is_published: z.boolean().optional(),
 });

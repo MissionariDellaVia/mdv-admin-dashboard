@@ -11,6 +11,8 @@ import { GospelList } from '@/pages/gospels/GospelList';
 import { GospelCreate } from '@/pages/gospels/GospelCreate';
 import { SeedList } from '@/pages/seeds/SeedList';
 import { SeedCreate } from '@/pages/seeds/SeedCreate';
+import { LocationList } from '@/pages/locations/LocationList';
+import { LocationEdit } from '@/pages/locations/LocationEdit';
 import { Toaster } from '@/components/ui/toaster';
 
 const queryClient = new QueryClient({
@@ -73,6 +75,9 @@ function App() {
               <Route path="/seeds" element={<SeedList />} />
               <Route path="/seeds/new" element={<SeedCreate />} />
               <Route path="/seeds/:id" element={<SeedCreate />} />
+              <Route path="/locations" element={<LocationList />} />
+              <Route path="/locations/new" element={<LocationEdit />} />
+              <Route path="/locations/:id" element={<LocationEdit />} />
             </Route>
           </Route>
         </Routes>

@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  BookOpen, 
-  Calendar, 
-  Sprout, 
+import {
+  BookOpen,
+  Calendar,
+  Sprout,
   LayoutDashboard,
-  X
+  X,
+  MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ const navigation = [
   { name: 'Via del Vangelo', href: '/gospel-daily', icon: Calendar },
   { name: 'Vangeli', href: '/gospels', icon: BookOpen },
   { name: 'Semini', href: '/seeds', icon: Sprout },
+  { name: 'Luoghi', href: '/locations', icon: MapPin },
 ];
 
 export function Sidebar({ open, onClose }: SidebarProps) {
