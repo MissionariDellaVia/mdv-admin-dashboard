@@ -144,3 +144,33 @@ export interface LocationInfoFormData {
   images?: string[];
   position?: number;
 }
+
+// EVENTS (Attività)
+export type EventType = 'text' | 'flyer';
+
+export interface ActivityEvent {
+  id: number;
+  location_slug: string;
+  lang: string | null;
+  type: EventType;
+  title: string | null;
+  body: string | null;
+  image: string | null;
+  event_date: string | null;
+  position: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ActivityEventFormData {
+  location_slug: string;
+  lang?: string | null;
+  type: EventType;
+  title?: string | null;
+  body?: string | null;
+  image?: string | null;
+  event_date?: string | null;
+  position?: number;
+  is_published?: boolean;
+}
