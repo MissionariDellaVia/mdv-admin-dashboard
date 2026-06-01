@@ -61,8 +61,15 @@ CREATE POLICY "Locations are updatable by authenticated users"
 CREATE POLICY "Locations are deletable by authenticated users"
   ON locations FOR DELETE USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Location info are viewable by everyone"
-  ON location_info FOR SELECT USING (true);
+CREATE POLICY "Location info viewable for published locations"
+  ON location_info FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM locations
+      WHERE locations.id = location_info.location_id
+        AND (locations.is_published = true OR auth.role() = 'authenticated')
+    )
+  );
 CREATE POLICY "Location info are insertable by authenticated users"
   ON location_info FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Location info are updatable by authenticated users"
