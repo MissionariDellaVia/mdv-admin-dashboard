@@ -20,8 +20,8 @@ const schema = z.object({
   slug: z.string().min(1, 'Slug richiesto').regex(/^[a-z0-9-]+$/, 'Solo minuscole, numeri e trattini'),
   lang: z.string().min(2),
   address: z.string().optional(),
-  latitude: z.number().nullable().optional(),
-  longitude: z.number().nullable().optional(),
+  latitude: z.preprocess((v) => (v === '' || v == null ? null : Number(v)), z.number().nullable().optional()),
+  longitude: z.preprocess((v) => (v === '' || v == null ? null : Number(v)), z.number().nullable().optional()),
   intro: z.string().optional(),
   is_published: z.boolean().optional(),
 });
@@ -42,7 +42,8 @@ export function LocationEdit() {
   });
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: { lang: 'it', is_published: true },
   });
   const isPublished = watch('is_published');

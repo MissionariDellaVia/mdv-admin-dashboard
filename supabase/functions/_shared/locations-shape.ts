@@ -26,8 +26,8 @@ export function shapeLocations(rows: LocationRow[], _lang: string) {
       .sort((a, b) => a.position - b.position)
       .map((info) => ({
         title: info.title,
-        body: info.body,
-        image: { url: imageUrlValue(info.images) },
+        articles: info.body ? [info.body] : [],
+        image: { url: imageUrlValue(info.images), align: 'right' },
       })),
   }));
   return {

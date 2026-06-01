@@ -8,7 +8,7 @@ describe('shapeLocations', () => {
       location_info: [
         { id: 2, title: 'B', body: '<p>b</p>', images: ['u1', 'u2'], position: 1 },
         { id: 1, title: 'A', body: '<p>a</p>', images: ['only'], position: 0 },
-        { id: 3, title: 'C', body: '<p>c</p>', images: [], position: 2 },
+        { id: 3, title: 'C', body: '', images: [], position: 2 },
       ],
     }];
     const out = shapeLocations(rows, 'it');
@@ -20,6 +20,9 @@ describe('shapeLocations', () => {
     expect(g.sections[0].image.url).toBe('only');
     expect(g.sections[1].image.url).toEqual(['u1', 'u2']);
     expect(g.sections[2].image.url).toBeNull();
+    expect(g.sections[0].articles).toEqual(['<p>a</p>']);
+    expect(g.sections[0].image.align).toBe('right');
+    expect(g.sections[2].articles).toEqual([]);
     expect(out.main.caption).toBe('Intro');
   });
 
