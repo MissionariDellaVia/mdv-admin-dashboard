@@ -97,8 +97,10 @@ export interface SeedFormData {
 
 // LOCATIONS
 
+export type ContactType = 'frate' | 'suora';
+
 export interface LocationEmail {
-  label: string;
+  type: ContactType;
   email: string;
 }
 

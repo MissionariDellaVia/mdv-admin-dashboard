@@ -461,6 +461,15 @@ export const locationsApi = {
     const { error } = await supabase.from('locations').delete().eq('id', id);
     if (error) throw error;
   },
+  async getBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('locations')
+      .select('*, location_info(*)')
+      .eq('slug', slug)
+      .order('lang', { ascending: true });
+    if (error) throw error;
+    return data as Location[];
+  },
   async uploadImage(file: File, slug: string) {
     const optimized = await compressImage(file);
     const cleanName = optimized.name.replace(/[^a-zA-Z0-9._-]/g, '_');
