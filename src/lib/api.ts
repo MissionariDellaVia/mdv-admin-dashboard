@@ -13,7 +13,9 @@ import type {
   Location,
   LocationFormData,
   LocationInfo,
-  LocationInfoFormData
+  LocationInfoFormData,
+  ActivityEvent,
+  ActivityEventFormData
 } from './types';
 
 // GOSPELS API
@@ -467,6 +469,34 @@ export const locationsApi = {
     if (error) throw error;
     const { data } = supabase.storage.from('location-media').getPublicUrl(path);
     return data.publicUrl;
+  },
+};
+
+// EVENTS API (Attività)
+export const eventsApi = {
+  async getForLocation(slug: string, lang: string) {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('location_slug', slug)
+      .or(`lang.is.null,lang.eq.${lang}`)
+      .order('position', { ascending: true });
+    if (error) throw error;
+    return data as ActivityEvent[];
+  },
+  async create(event: ActivityEventFormData) {
+    const { data, error } = await supabase.from('events').insert([event]).select().single();
+    if (error) throw error;
+    return data as ActivityEvent;
+  },
+  async update(id: number, event: Partial<ActivityEventFormData>) {
+    const { data, error } = await supabase.from('events').update(event).eq('id', id).select().single();
+    if (error) throw error;
+    return data as ActivityEvent;
+  },
+  async delete(id: number) {
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (error) throw error;
   },
 };
 
