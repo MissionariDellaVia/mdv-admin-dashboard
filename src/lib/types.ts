@@ -97,6 +97,11 @@ export interface SeedFormData {
 
 // LOCATIONS
 
+export interface LocationEmail {
+  label: string;
+  email: string;
+}
+
 export interface LocationInfo {
   id: number;
   location_id: number;
@@ -120,6 +125,9 @@ export interface Location {
   intro: string | null;
   position: number;
   is_published: boolean;
+  phone: string | null;
+  city: string | null;
+  emails: LocationEmail[];
   created_at: string;
   updated_at: string;
   location_info?: LocationInfo[];
@@ -136,6 +144,9 @@ export interface LocationFormData {
   intro?: string | null;
   position?: number;
   is_published?: boolean;
+  phone?: string | null;
+  city?: string | null;
+  emails?: LocationEmail[];
 }
 
 export interface LocationInfoFormData {
