@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
 
-const LANGS = ['it', 'en', 'es'];
+const LANGS = ['it', 'en', 'es', 'fr', 'pl', 'pt'];
 
 export function LocationList() {
   const navigate = useNavigate();
