@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft,
@@ -228,7 +229,22 @@ function EventRow({ event, slug, lang }: { event: ActivityEvent; slug: string; l
   return (
     <div className="flex items-center gap-3 border rounded-lg p-3">
       {event.image && (
-        <img src={event.image} alt="" className="h-12 w-12 object-cover rounded border shrink-0" />
+        <Dialog>
+          <DialogTrigger asChild>
+            <img
+              src={event.image}
+              alt=""
+              className="h-12 w-12 object-cover rounded border shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl flex items-center justify-center bg-black/90 border-0 p-4">
+            <img
+              src={event.image}
+              alt=""
+              className="max-h-[80vh] w-auto mx-auto object-contain"
+            />
+          </DialogContent>
+        </Dialog>
       )}
       {!event.image && (
         <div className="h-12 w-12 flex items-center justify-center bg-muted rounded border shrink-0">
@@ -366,7 +382,6 @@ export function LocationEdit() {
   });
 
   const isPublished = watch('is_published');
-  const slugValue = watch('slug');
 
   // ── Populate form when selectedLang or locationRows changes ───────────────
   useEffect(() => {
@@ -442,7 +457,11 @@ export function LocationEdit() {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
       queryClient.invalidateQueries({ queryKey: ['location', loc.slug] });
       toast({ title: 'Salvato', description: `Lingua "${selectedLang}" salvata` });
-      // Stay on page — user switches language to fill other translations.
+      if (!isEdit) {
+        // New mode: navigate to the edit page so the user can add more languages/events.
+        navigate('/locations/' + loc.slug);
+      }
+      // Edit mode: stay on page — user switches language to fill other translations.
     },
     onError: (e: Error) =>
       toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
@@ -460,9 +479,6 @@ export function LocationEdit() {
       </div>
     );
   }
-
-  // The slug to use for events tab (in new mode we use the typed slug value).
-  const activeSlug = isEdit ? slugParam! : slugValue ?? '';
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -485,37 +501,53 @@ export function LocationEdit() {
           <Globe className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium text-muted-foreground">Lingua</span>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {ALL_LANGS.map((l) => {
-            const exists = presentLangs.has(l);
-            const active = l === selectedLang;
-            return (
-              <Button
-                key={l}
-                type="button"
-                size="sm"
-                variant={active ? 'default' : 'outline'}
-                className={
-                  active
-                    ? 'bg-brown-600 hover:bg-brown-700 text-white'
-                    : exists
-                    ? 'border-brown-400 text-brown-700'
-                    : 'text-muted-foreground'
-                }
-                onClick={() => setSelectedLang(l)}
-              >
+        {isEdit ? (
+          <>
+            <div className="flex gap-2 flex-wrap">
+              {ALL_LANGS.map((l) => {
+                const exists = presentLangs.has(l);
+                const active = l === selectedLang;
+                return (
+                  <Button
+                    key={l}
+                    type="button"
+                    size="sm"
+                    variant={active ? 'default' : 'outline'}
+                    className={
+                      active
+                        ? 'bg-brown-600 hover:bg-brown-700 text-white'
+                        : exists
+                        ? 'border-brown-400 text-brown-700'
+                        : 'text-muted-foreground'
+                    }
+                    onClick={() => setSelectedLang(l)}
+                  >
+                    {l.toUpperCase()}
+                    {exists && !active && (
+                      <span className="ml-1 h-1.5 w-1.5 rounded-full bg-brown-500 inline-block" />
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+            {!presentLangs.has(selectedLang) && (
+              <p className="text-xs text-amber-600 mt-1">
+                Questa lingua non esiste ancora — verrà creata al salvataggio.
+              </p>
+            )}
+          </>
+        ) : (
+          <select
+            value={selectedLang}
+            onChange={(e) => setSelectedLang(e.target.value)}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            {ALL_LANGS.map((l) => (
+              <option key={l} value={l}>
                 {l.toUpperCase()}
-                {exists && !active && (
-                  <span className="ml-1 h-1.5 w-1.5 rounded-full bg-brown-500 inline-block" />
-                )}
-              </Button>
-            );
-          })}
-        </div>
-        {isEdit && !presentLangs.has(selectedLang) && (
-          <p className="text-xs text-amber-600 mt-1">
-            Questa lingua non esiste ancora — verrà creata al salvataggio.
-          </p>
+              </option>
+            ))}
+          </select>
         )}
       </div>
 
@@ -525,7 +557,7 @@ export function LocationEdit() {
           <TabsList>
             <TabsTrigger value="dati">Dati del luogo</TabsTrigger>
             <TabsTrigger value="info">Info statiche</TabsTrigger>
-            <TabsTrigger value="attivita" disabled={!activeSlug}>
+            <TabsTrigger value="attivita" disabled={!isEdit}>
               Attività
             </TabsTrigger>
           </TabsList>
@@ -675,11 +707,11 @@ export function LocationEdit() {
           <TabsContent value="attivita">
             <Card>
               <CardContent className="pt-6">
-                {activeSlug ? (
-                  <EventsTab slug={activeSlug} lang={selectedLang} />
+                {isEdit ? (
+                  <EventsTab slug={slugParam!} lang={selectedLang} />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Inserisci uno slug per gestire le attività.
+                    Salva il luogo per gestire le attività e i volantini.
                   </p>
                 )}
               </CardContent>
