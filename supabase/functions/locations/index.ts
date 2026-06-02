@@ -24,7 +24,14 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: error.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const response = shapeLocations(data ?? [], lang);
+    const { data: eventsData } = await supabaseClient
+      .from("events")
+      .select("*")
+      .or(`lang.is.null,lang.eq.${lang}`)
+      .eq("is_published", true)
+      .order("position", { ascending: true });
+
+    const response = shapeLocations(data ?? [], eventsData ?? []);
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=300" },
     });
