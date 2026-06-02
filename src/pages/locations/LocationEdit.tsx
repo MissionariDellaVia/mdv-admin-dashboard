@@ -24,11 +24,15 @@ import {
   Image as ImageIcon,
   FileText,
 } from 'lucide-react';
-import type { LocationEmail, ContactType, ActivityEvent, ActivityEventFormData } from '@/lib/types';
+import type { Location, LocationEmail, ContactType, ActivityEvent, ActivityEventFormData } from '@/lib/types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ALL_LANGS = ['it', 'en', 'es', 'fr', 'pl', 'pt'] as const;
+
+// Stable empty reference: avoids React #185 (infinite render loop) when the query
+// is disabled (new mode → data undefined) and a fresh `[]` would change each render.
+const EMPTY_ROWS: Location[] = [];
 
 // ─── Zod schema for tab-1 fields ──────────────────────────────────────────────
 
@@ -358,11 +362,12 @@ export function LocationEdit() {
   const [infoBody, setInfoBody] = useState('');
 
   // ── Fetch all language rows for this slug (edit mode) ──────────────────────
-  const { data: locationRows = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['location', slugParam],
     queryFn: () => locationsApi.getBySlug(slugParam!),
     enabled: isEdit,
   });
+  const locationRows = data ?? EMPTY_ROWS;
 
   // Build a map lang → Location row.
   const langMap = new Map(locationRows.map((r) => [r.lang, r]));
