@@ -5,6 +5,7 @@ describe('shapeLocations', () => {
   it('ordina info per position e applica regola immagini su info.images quando non ci sono flyer', () => {
     const rows = [{
       id: 1, slug: 'madonna-dc', name: 'Santuario', intro: 'Intro',
+      phone: '098176684', city: 'Cassano', emails: [{type:'frate', email:'a@b.it'}],
       location_info: [
         { id: 2, title: 'B', body: '<p>b</p>', images: ['u1', 'u2'], position: 1 },
         { id: 1, title: 'A', body: '<p>a</p>', images: ['only'], position: 0 },
@@ -20,6 +21,9 @@ describe('shapeLocations', () => {
     expect(g.sections[1].image.url).toEqual(['u1', 'u2']);
     expect(g.sections[2].image.url).toBeNull();
     expect(out.main.caption).toBe('Intro');
+    expect(out.groups[0].phone).toBe('098176684');
+    expect(out.groups[0].city).toBe('Cassano');
+    expect(out.groups[0].emails.length).toBe(1);
   });
 
   it('mette i flyer (carosello) sulla prima sezione e aggiunge gli eventi testuali come sezioni', () => {

@@ -5,6 +5,7 @@ interface InfoRow { id: number; title: string | null; body: string; images: stri
 interface LocationRow {
   id: number; slug: string; name: string; address?: string | null;
   latitude?: number | null; longitude?: number | null; intro?: string | null;
+  phone?: string | null; city?: string | null; emails?: Array<{type:string; email:string}> | null;
   location_info?: InfoRow[];
 }
 interface EventRow {
@@ -62,6 +63,9 @@ export function shapeLocations(rows: LocationRow[], events: EventRow[] = []) {
       address: loc.address ?? null,
       latitude: loc.latitude ?? null,
       longitude: loc.longitude ?? null,
+      phone: loc.phone ?? null,
+      city: loc.city ?? null,
+      emails: loc.emails ?? [],
       sections,
     };
   });

@@ -15,7 +15,7 @@ serve(async (req) => {
     );
     const { data, error } = await supabaseClient
       .from("locations")
-      .select(`id, slug, name, lang, address, latitude, longitude, cover_image, intro, position,
+      .select(`id, slug, name, lang, address, latitude, longitude, cover_image, intro, position, phone, city, emails,
         location_info ( id, title, body, images, position )`)
       .eq("lang", lang)
       .eq("is_published", true)
