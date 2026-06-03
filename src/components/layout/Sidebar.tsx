@@ -90,7 +90,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-mdv-darkest">
           <p className="text-xs text-mdv-gray text-center">
-            Via del Vangelo v1.0
+            MdV Dashboard v1.2.0
           </p>
         </div>
       </div>
