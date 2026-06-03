@@ -136,8 +136,9 @@ richiedono la function. La function serve solo a creare/eliminare l'utente auth.
   "Nuovo Luogo", "Collaboratori" → nascosti e con redirect difensivo a `/locations`.
 - **`LocationList`**: per il collaboratore mostra solo gli slug in `allowedSlugs`; niente
   pulsante "Nuovo Luogo" né cestino.
-- **`LocationEdit`**: per il collaboratore il tab **"Dati del luogo" è nascosto**; restano
-  **"Info statiche"** e **"Attività"**; nessun toggle di pubblicazione.
+- **`LocationEdit`**: per il collaboratore il tab **"Dati del luogo" è in sola lettura**
+  (campi `disabled`, niente salvataggio dell'anagrafica né toggle di pubblicazione); i tab
+  **"Info statiche"** e **"Attività"** restano pienamente modificabili.
 - **Nuova pagina admin `/collaboratori`**: elenco collaboratori, "Invita" (email + selezione
   luoghi → mostra la password temporanea una volta), modifica assegnazioni, revoca.
 
