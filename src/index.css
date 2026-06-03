@@ -23,8 +23,8 @@
     --popover: 37 47% 97%;
     --popover-foreground: 24 31% 20%;
 
-    --primary: 40 67% 33%; /* gold-500 #8c681c */
-    --primary-foreground: 40 60% 97%;
+    --primary: 24 31% 33%; /* color3 - Marrone medio */
+    --primary-foreground: 37 47% 95%;
 
     --secondary: 37 47% 85%;
     --secondary-foreground: 24 31% 25%;
@@ -32,15 +32,15 @@
     --muted: 37 30% 90%;
     --muted-foreground: 340 3% 45%; /* Basato su color6 */
 
-    --accent: 40 45% 90%;
-    --accent-foreground: 30 50% 20%;
+    --accent: 31 36% 48%; /* color4 - Marrone chiaro */
+    --accent-foreground: 43 93% 8%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 37 30% 80%;
     --input: 37 30% 80%;
-    --ring: 40 67% 33%; /* gold-500 */
+    --ring: 24 31% 33%;
 
     --radius: 0.5rem;
   }
