@@ -49,3 +49,56 @@ describe('collaboratorsApi.setAssignments', () => {
     ]);
   });
 });
+
+describe('collaboratorsApi.list', () => {
+  it('raggruppa i luoghi per collaboratore', async () => {
+    const profs = [
+      { id: 'u1', email: 'a@x.it' },
+      { id: 'u2', email: 'b@x.it' },
+    ];
+    const links = [
+      { user_id: 'u1', location_slug: 'madonna-dc' },
+      { user_id: 'u1', location_slug: 'altro' },
+    ];
+    const mockEqProfiles = vi.fn().mockResolvedValue({ data: profs, error: null });
+    const mockSelectProfiles = vi.fn().mockReturnValue({ eq: mockEqProfiles });
+    const mockSelectLinks = vi.fn().mockResolvedValue({ data: links, error: null });
+    mockFrom
+      .mockReturnValueOnce({ select: mockSelectProfiles })
+      .mockReturnValueOnce({ select: mockSelectLinks });
+
+    const result = await collaboratorsApi.list();
+
+    expect(mockFrom).toHaveBeenNthCalledWith(1, 'profiles');
+    expect(mockSelectProfiles).toHaveBeenCalledWith('id, email');
+    expect(mockEqProfiles).toHaveBeenCalledWith('role', 'collaborator');
+    expect(mockFrom).toHaveBeenNthCalledWith(2, 'location_editors');
+    expect(result).toEqual([
+      { id: 'u1', email: 'a@x.it', slugs: ['madonna-dc', 'altro'] },
+      { id: 'u2', email: 'b@x.it', slugs: [] },
+    ]);
+  });
+
+  it('propaga l errore della query profiles', async () => {
+    const mockEqProfiles = vi.fn().mockResolvedValue({ data: null, error: new Error('boom') });
+    const mockSelectProfiles = vi.fn().mockReturnValue({ eq: mockEqProfiles });
+    mockFrom.mockReturnValueOnce({ select: mockSelectProfiles });
+
+    await expect(collaboratorsApi.list()).rejects.toThrow('boom');
+  });
+});
+
+describe('collaboratorsApi.setAssignments con lista vuota', () => {
+  it('cancella e NON chiama insert quando slugs è vuoto', async () => {
+    const mockEq = vi.fn().mockResolvedValue({ error: null });
+    const mockDelete = vi.fn().mockReturnValue({ eq: mockEq });
+    const mockInsert = vi.fn();
+    mockFrom.mockReturnValue({ delete: mockDelete, insert: mockInsert });
+
+    await collaboratorsApi.setAssignments('u1', []);
+
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockEq).toHaveBeenCalledWith('user_id', 'u1');
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+});
