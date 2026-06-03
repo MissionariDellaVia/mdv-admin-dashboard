@@ -584,6 +584,24 @@ export const collaboratorsApi = {
     }));
   },
 
+  // Rimuove definitivamente un collaboratore (assegnazioni + profilo + utente Auth).
+  async delete(userId: string) {
+    const { data, error } = await supabase.functions.invoke('admin-delete-collaborator', {
+      body: { userId },
+    });
+    if (error) throw error;
+    return data as { id: string; deleted: boolean };
+  },
+
+  // Rigenera la password temporanea di un collaboratore; ritorna la nuova password.
+  async resetPassword(userId: string) {
+    const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+      body: { userId },
+    });
+    if (error) throw error;
+    return data as { id: string; email: string; tempPassword: string };
+  },
+
   // Reimposta l'elenco dei luoghi di un collaboratore (delete + reinsert).
   async setAssignments(userId: string, slugs: string[]) {
     const { error: delErr } = await supabase

@@ -32,6 +32,38 @@ describe('collaboratorsApi.invite', () => {
   });
 });
 
+describe('collaboratorsApi.delete', () => {
+  it('invoca la edge function admin-delete-collaborator', async () => {
+    mockInvoke.mockResolvedValue({ data: { id: 'u1', deleted: true }, error: null });
+
+    const result = await collaboratorsApi.delete('u1');
+
+    expect(mockInvoke).toHaveBeenCalledWith('admin-delete-collaborator', { body: { userId: 'u1' } });
+    expect(result).toEqual({ id: 'u1', deleted: true });
+  });
+
+  it('propaga l errore della function', async () => {
+    mockInvoke.mockResolvedValue({ data: null, error: new Error('Solo gli admin') });
+    await expect(collaboratorsApi.delete('u1')).rejects.toThrow('Solo gli admin');
+  });
+});
+
+describe('collaboratorsApi.resetPassword', () => {
+  it('invoca la edge function admin-reset-password e ritorna la nuova password', async () => {
+    mockInvoke.mockResolvedValue({ data: { id: 'u1', email: 'x@y.it', tempPassword: 'NEW123' }, error: null });
+
+    const result = await collaboratorsApi.resetPassword('u1');
+
+    expect(mockInvoke).toHaveBeenCalledWith('admin-reset-password', { body: { userId: 'u1' } });
+    expect(result).toEqual({ id: 'u1', email: 'x@y.it', tempPassword: 'NEW123' });
+  });
+
+  it('propaga l errore della function', async () => {
+    mockInvoke.mockResolvedValue({ data: null, error: new Error('Solo gli admin') });
+    await expect(collaboratorsApi.resetPassword('u1')).rejects.toThrow('Solo gli admin');
+  });
+});
+
 describe('collaboratorsApi.setAssignments', () => {
   it('cancella le assegnazioni esistenti e reinserisce le nuove', async () => {
     const mockEq = vi.fn().mockResolvedValue({ error: null });
