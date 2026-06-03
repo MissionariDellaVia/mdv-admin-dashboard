@@ -15,7 +15,9 @@ import type {
   LocationInfo,
   LocationInfoFormData,
   ActivityEvent,
-  ActivityEventFormData
+  ActivityEventFormData,
+  Profile,
+  Collaborator
 } from './types';
 
 // GOSPELS API
@@ -534,5 +536,63 @@ export const locationInfoApi = {
   async delete(id: number) {
     const { error } = await supabase.from('location_info').delete().eq('id', id);
     if (error) throw error;
+  },
+};
+
+// PROFILES / COLLABORATORS API
+export const profilesApi = {
+  async getMine() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data, error } = await supabase
+      .from('profiles').select('id, role, email, must_change_password')
+      .eq('id', user.id).single();
+    if (error) throw error;
+    return data as Profile;
+  },
+
+  async completePasswordChange() {
+    const { error } = await supabase.rpc('complete_password_change');
+    if (error) throw error;
+  },
+};
+
+export const collaboratorsApi = {
+  // Crea un collaboratore via edge function admin; ritorna la password temporanea.
+  async invite(email: string, slugs: string[]) {
+    const { data, error } = await supabase.functions.invoke('admin-invite', {
+      body: { email, slugs },
+    });
+    if (error) throw error;
+    return data as { id: string; email: string; tempPassword: string };
+  },
+
+  // Elenca i collaboratori con i loro luoghi.
+  async list(): Promise<Collaborator[]> {
+    const { data: profs, error } = await supabase
+      .from('profiles').select('id, email').eq('role', 'collaborator');
+    if (error) throw error;
+    const { data: links, error: linkErr } = await supabase
+      .from('location_editors').select('user_id, location_slug');
+    if (linkErr) throw linkErr;
+    const bySlug: Record<string, string[]> = {};
+    for (const l of (links ?? []) as { user_id: string; location_slug: string }[]) {
+      (bySlug[l.user_id] ??= []).push(l.location_slug);
+    }
+    return (profs ?? []).map((p: { id: string; email: string | null }) => ({
+      id: p.id, email: p.email, slugs: bySlug[p.id] ?? [],
+    }));
+  },
+
+  // Reimposta l'elenco dei luoghi di un collaboratore (delete + reinsert).
+  async setAssignments(userId: string, slugs: string[]) {
+    const { error: delErr } = await supabase
+      .from('location_editors').delete().eq('user_id', userId);
+    if (delErr) throw delErr;
+    if (slugs.length) {
+      const { error: insErr } = await supabase
+        .from('location_editors').insert(slugs.map((s) => ({ user_id: userId, location_slug: s })));
+      if (insErr) throw insErr;
+    }
   },
 };

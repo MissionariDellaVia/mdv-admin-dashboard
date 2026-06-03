@@ -187,3 +187,20 @@ export interface ActivityEventFormData {
   position?: number;
   is_published?: boolean;
 }
+
+// PROFILES / COLLABORATORS
+
+export type UserRole = 'admin' | 'collaborator';
+
+export interface Profile {
+  id: string;
+  role: UserRole;
+  email: string | null;
+  must_change_password: boolean;
+}
+
+export interface Collaborator {
+  id: string;
+  email: string | null;
+  slugs: string[];
+}
