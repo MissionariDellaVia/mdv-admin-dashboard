@@ -24,12 +24,12 @@ export function CollaboratorsList() {
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
-    queryFn: () => locationsApi.getAll(),
+    queryFn: () => locationsApi.getAll('it'),
   });
   const allSlugs = Array.from(new Set(locations.map((l) => l.slug)));
 
   const invite = useMutation({
-    mutationFn: () => collaboratorsApi.invite(email, slugs),
+    mutationFn: () => collaboratorsApi.invite(email.trim(), slugs),
     onSuccess: (res) => {
       setTempPwd({ email: res.email, pwd: res.tempPassword });
       setEmail(''); setSlugs([]); setAdding(false);
