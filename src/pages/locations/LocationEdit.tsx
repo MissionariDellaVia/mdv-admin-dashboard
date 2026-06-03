@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { motion } from 'framer-motion';
 import { RichTextEditor } from '@/components/editors/RichTextEditor';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Upload, X } from 'lucide-react';
@@ -67,6 +68,7 @@ export function LocationEdit() {
   const [uploadingInfo, setUploadingInfo] = useState(false);
   // Tracks unsaved edits in the non-RHF controlled bits (emails / info body / info images).
   const [extraDirty, setExtraDirty] = useState(false);
+  const [tab, setTab] = useState<'dati' | 'info' | 'attivita'>('dati');
 
   // ── Fetch the location rows for this slug (edit mode) ──────────────────────
   const { data, isLoading } = useQuery({
@@ -252,15 +254,32 @@ export function LocationEdit() {
 
       {/* ── Tabs + form ── */}
       <form onSubmit={handleSubmit((d) => save.mutate(d))}>
-        <Tabs defaultValue="dati">
-          <TabsList>
-            <TabsTrigger value="dati">Dati del luogo</TabsTrigger>
-            <TabsTrigger value="info">Info statiche</TabsTrigger>
-            <TabsTrigger value="attivita">Attività</TabsTrigger>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+          <TabsList className="h-auto gap-1 rounded-full bg-brown-100/70 p-1">
+            {([
+              { value: 'dati', label: 'Dati del luogo' },
+              { value: 'info', label: 'Info statiche' },
+              { value: 'attivita', label: 'Attività' },
+            ] as const).map((t) => (
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="relative rounded-full px-4 py-1.5 text-sm font-medium text-brown-500 transition-colors hover:text-brown-700 data-[state=active]:bg-transparent data-[state=active]:text-brown-800 data-[state=active]:shadow-none"
+              >
+                {tab === t.value && (
+                  <motion.span
+                    layoutId="loc-tab-pill"
+                    className="absolute inset-0 rounded-full bg-white shadow-sm ring-1 ring-brown-200/60"
+                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <span className="relative z-10">{t.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* ── Tab 1: Dati ── */}
-          <TabsContent value="dati">
+          <TabsContent value="dati" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
             <Card>
               <CardContent className="space-y-4 pt-6">
                 {/* Name */}
@@ -393,7 +412,7 @@ export function LocationEdit() {
           </TabsContent>
 
           {/* ── Tab 2: Info statiche ── */}
-          <TabsContent value="info">
+          <TabsContent value="info" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
             <Card>
               <CardContent className="space-y-4 pt-6">
                 <div className="space-y-1.5">
@@ -455,7 +474,7 @@ export function LocationEdit() {
           </TabsContent>
 
           {/* ── Tab 3: Attività (events) ── */}
-          <TabsContent value="attivita">
+          <TabsContent value="attivita" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
             <Card>
               <CardContent className="pt-6">
                 {isEdit ? (

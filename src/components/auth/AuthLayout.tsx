@@ -14,7 +14,7 @@ interface AuthLayoutProps {
 
 /**
  * Cornice condivisa per Login e Cambio password: atmosfera calda "da santuario"
- * (gradiente radiale, alone dorato, anelli concentrici, grana) + card crema centrata.
+ * (gradiente radiale, alone dorato, grana) + card crema centrata.
  */
 export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', children }: AuthLayoutProps) {
   return (
@@ -23,12 +23,6 @@ export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', childr
       {/* Alone dorato come luce di candela */}
       <div className="pointer-events-none absolute -top-44 left-1/2 h-[520px] w-[520px] -translate-x-1/2
                       rounded-full bg-[#A67D51]/25 blur-[130px]" />
-      {/* Anelli concentrici tenui */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.045]">
-        <div className="absolute h-[760px] w-[760px] rounded-full border border-[#d3b282]" />
-        <div className="absolute h-[520px] w-[520px] rounded-full border border-[#d3b282]" />
-        <div className="absolute h-[300px] w-[300px] rounded-full border border-[#d3b282]" />
-      </div>
       {/* Grana */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-soft-light"
            style={{ backgroundImage: GRAIN }} />
