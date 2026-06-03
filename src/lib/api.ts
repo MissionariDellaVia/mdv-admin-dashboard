@@ -250,11 +250,15 @@ export const gospelDailyApi = {
 
   // Giornate (gospel_daily) con almeno un COMMENTO (section_type 'main' = Via del Vangelo valida).
   async getCommentedCount() {
-    const { data, error } = await supabase
-      .from('comment_sections').select('gospel_daily_id').eq('section_type', 'main');
+    // Count esatto lato DB: evita il limite di 1000 righe di PostgREST (che falsava
+    // il conteggio lato client, mostrando ~1000 invece del totale reale). La sezione
+    // 'main' è 1:1 per giornata, quindi le righe 'main' = giornate con commento.
+    const { count, error } = await supabase
+      .from('comment_sections')
+      .select('*', { count: 'exact', head: true })
+      .eq('section_type', 'main');
     if (error) throw error;
-    const ids = new Set((data ?? []).map((r: { gospel_daily_id: number }) => r.gospel_daily_id));
-    return ids.size;
+    return count || 0;
   },
 
   // Copertura calendario: quanti dei prossimi `days` giorni (da oggi incluso) hanno una Via del Vangelo.

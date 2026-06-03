@@ -16,28 +16,21 @@ beforeEach(() => { vi.clearAllMocks(); });
 // getCommentedCount
 // ---------------------------------------------------------------------------
 describe('gospelDailyApi.getCommentedCount', () => {
-  it('conta le giornate distinte con commento main (deduplicando i duplicati)', async () => {
-    const mockEq = vi.fn().mockResolvedValue({
-      data: [
-        { gospel_daily_id: 1 },
-        { gospel_daily_id: 1 },
-        { gospel_daily_id: 2 },
-      ],
-      error: null,
-    });
+  it('usa un count esatto lato DB (head) filtrato su section_type=main', async () => {
+    const mockEq = vi.fn().mockResolvedValue({ count: 2706, error: null });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
 
     const result = await gospelDailyApi.getCommentedCount();
 
     expect(mockFrom).toHaveBeenCalledWith('comment_sections');
-    expect(mockSelect).toHaveBeenCalledWith('gospel_daily_id');
+    expect(mockSelect).toHaveBeenCalledWith('*', { count: 'exact', head: true });
     expect(mockEq).toHaveBeenCalledWith('section_type', 'main');
-    expect(result).toBe(2);
+    expect(result).toBe(2706);
   });
 
-  it('ritorna 0 quando non ci sono commenti main', async () => {
-    const mockEq = vi.fn().mockResolvedValue({ data: [], error: null });
+  it('ritorna 0 quando il count è null', async () => {
+    const mockEq = vi.fn().mockResolvedValue({ count: null, error: null });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
 
@@ -47,7 +40,7 @@ describe('gospelDailyApi.getCommentedCount', () => {
   });
 
   it('propaga l errore di supabase', async () => {
-    const mockEq = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') });
+    const mockEq = vi.fn().mockResolvedValue({ count: null, error: new Error('db error') });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
 
