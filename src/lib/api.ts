@@ -248,12 +248,27 @@ export const gospelDailyApi = {
     if (error) throw error;
   },
 
-  // Quante "Via del Vangelo" hanno almeno un commento (giornate distinte con commenti).
+  // Giornate (gospel_daily) con almeno un COMMENTO (section_type 'main' = Via del Vangelo valida).
   async getCommentedCount() {
-    const { data, error } = await supabase.from('comment_sections').select('gospel_daily_id');
+    const { data, error } = await supabase
+      .from('comment_sections').select('gospel_daily_id').eq('section_type', 'main');
     if (error) throw error;
     const ids = new Set((data ?? []).map((r: { gospel_daily_id: number }) => r.gospel_daily_id));
     return ids.size;
+  },
+
+  // Copertura calendario: quanti dei prossimi `days` giorni (da oggi incluso) hanno una Via del Vangelo.
+  async getUpcomingCoverage(days = 30) {
+    const today = new Date();
+    const start = today.toISOString().slice(0, 10);
+    const end = new Date(today);
+    end.setDate(end.getDate() + days - 1);
+    const endStr = end.toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .from('gospel_daily').select('date').gte('date', start).lte('date', endStr);
+    if (error) throw error;
+    const covered = new Set((data ?? []).map((r: { date: string }) => r.date)).size;
+    return { covered, total: days };
   },
 
   // Conteggi di pubblicazione per mese, ultimi `months` mesi (ordine cronologico).

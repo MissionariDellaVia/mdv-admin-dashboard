@@ -16,8 +16,8 @@ beforeEach(() => { vi.clearAllMocks(); });
 // getCommentedCount
 // ---------------------------------------------------------------------------
 describe('gospelDailyApi.getCommentedCount', () => {
-  it('conta le giornate distinte con commenti (deduplicando i duplicati)', async () => {
-    const mockSelect = vi.fn().mockResolvedValue({
+  it('conta le giornate distinte con commento main (deduplicando i duplicati)', async () => {
+    const mockEq = vi.fn().mockResolvedValue({
       data: [
         { gospel_daily_id: 1 },
         { gospel_daily_id: 1 },
@@ -25,17 +25,20 @@ describe('gospelDailyApi.getCommentedCount', () => {
       ],
       error: null,
     });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
 
     const result = await gospelDailyApi.getCommentedCount();
 
     expect(mockFrom).toHaveBeenCalledWith('comment_sections');
     expect(mockSelect).toHaveBeenCalledWith('gospel_daily_id');
+    expect(mockEq).toHaveBeenCalledWith('section_type', 'main');
     expect(result).toBe(2);
   });
 
-  it('ritorna 0 quando non ci sono commenti', async () => {
-    const mockSelect = vi.fn().mockResolvedValue({ data: [], error: null });
+  it('ritorna 0 quando non ci sono commenti main', async () => {
+    const mockEq = vi.fn().mockResolvedValue({ data: [], error: null });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
 
     const result = await gospelDailyApi.getCommentedCount();
@@ -44,7 +47,8 @@ describe('gospelDailyApi.getCommentedCount', () => {
   });
 
   it('propaga l errore di supabase', async () => {
-    const mockSelect = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') });
+    const mockEq = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     mockFrom.mockReturnValue({ select: mockSelect });
 
     await expect(gospelDailyApi.getCommentedCount()).rejects.toThrow('db error');
@@ -131,5 +135,62 @@ describe('gospelDailyApi.getMonthlyCounts', () => {
     mockFrom.mockReturnValue({ select: mockSelect });
 
     await expect(gospelDailyApi.getMonthlyCounts(6)).rejects.toThrow('query failed');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getUpcomingCoverage
+// ---------------------------------------------------------------------------
+describe('gospelDailyApi.getUpcomingCoverage', () => {
+  it('conta le date uniche coperte nei prossimi N giorni', async () => {
+    const mockLte = vi.fn().mockResolvedValue({
+      data: [
+        { date: '2026-06-03' },
+        { date: '2026-06-03' }, // duplicato: stesso giorno
+        { date: '2026-06-04' },
+      ],
+      error: null,
+    });
+    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
+    const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
+    mockFrom.mockReturnValue({ select: mockSelect });
+
+    const result = await gospelDailyApi.getUpcomingCoverage(30);
+
+    expect(mockFrom).toHaveBeenCalledWith('gospel_daily');
+    expect(mockSelect).toHaveBeenCalledWith('date');
+    expect(result.covered).toBe(2);
+    expect(result.total).toBe(30);
+  });
+
+  it('ritorna covered=0 quando non ci sono giorni coperti', async () => {
+    const mockLte = vi.fn().mockResolvedValue({ data: [], error: null });
+    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
+    const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
+    mockFrom.mockReturnValue({ select: mockSelect });
+
+    const result = await gospelDailyApi.getUpcomingCoverage(30);
+
+    expect(result).toEqual({ covered: 0, total: 30 });
+  });
+
+  it('rispetta il parametro days personalizzato', async () => {
+    const mockLte = vi.fn().mockResolvedValue({ data: [], error: null });
+    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
+    const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
+    mockFrom.mockReturnValue({ select: mockSelect });
+
+    const result = await gospelDailyApi.getUpcomingCoverage(7);
+
+    expect(result.total).toBe(7);
+  });
+
+  it('propaga l errore di supabase', async () => {
+    const mockLte = vi.fn().mockResolvedValue({ data: null, error: new Error('coverage error') });
+    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
+    const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
+    mockFrom.mockReturnValue({ select: mockSelect });
+
+    await expect(gospelDailyApi.getUpcomingCoverage(30)).rejects.toThrow('coverage error');
   });
 });
