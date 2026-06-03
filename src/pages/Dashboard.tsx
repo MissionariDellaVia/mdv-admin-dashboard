@@ -260,7 +260,7 @@ export function Dashboard() {
       <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
 
         {/* Frequency bar chart — lg:col-span-2 */}
-        <Card className="shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
+        <Card className="shadow-sm hover:shadow-md transition-shadow lg:col-span-2 h-full flex flex-col">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-brown-600" />
@@ -268,8 +268,8 @@ export function Dashboard() {
             </CardTitle>
             <CardDescription>Frequenza di pubblicazione mensile</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-end justify-between gap-3 h-64 pt-2">
+          <CardContent className="flex-1 flex flex-col">
+            <div className="flex items-end justify-between gap-3 flex-1 pt-2 min-h-[16rem]">
               {monthlyBuckets.map((bucket) => {
                 const heightPct = Math.max(4, Math.round((bucket.count / maxCount) * 100));
                 const monthLabel = new Date(bucket.month + '-01').toLocaleDateString('it-IT', { month: 'short' });
