@@ -20,9 +20,9 @@ describe('collaboratorsApi.invite', () => {
   it('invoca la edge function admin-invite e ritorna i dati', async () => {
     mockInvoke.mockResolvedValue({ data: { id: 'u1', email: 'x@y.it', tempPassword: 'abc' }, error: null });
 
-    const result = await collaboratorsApi.invite('x@y.it', ['madonna-dc']);
+    const result = await collaboratorsApi.invite('x@y.it', ['madonna-dc'], 'Mario Rossi');
 
-    expect(mockInvoke).toHaveBeenCalledWith('admin-invite', { body: { email: 'x@y.it', slugs: ['madonna-dc'] } });
+    expect(mockInvoke).toHaveBeenCalledWith('admin-invite', { body: { email: 'x@y.it', slugs: ['madonna-dc'], displayName: 'Mario Rossi' } });
     expect(result).toEqual({ id: 'u1', email: 'x@y.it', tempPassword: 'abc' });
   });
 

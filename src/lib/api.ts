@@ -610,9 +610,9 @@ export const profilesApi = {
 
 export const collaboratorsApi = {
   // Crea un collaboratore via edge function admin; ritorna la password temporanea.
-  async invite(email: string, slugs: string[]) {
+  async invite(email: string, slugs: string[], displayName?: string) {
     const { data, error } = await supabase.functions.invoke('admin-invite', {
-      body: { email, slugs },
+      body: { email, slugs, displayName: displayName?.trim() || undefined },
     });
     if (error) throw error;
     return data as { id: string; email: string; tempPassword: string };

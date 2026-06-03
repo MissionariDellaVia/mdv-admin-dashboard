@@ -15,6 +15,7 @@ export function CollaboratorInvite() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [slugs, setSlugs] = useState<string[]>([]);
   const [result, setResult] = useState<{ email: string; pwd: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -26,7 +27,7 @@ export function CollaboratorInvite() {
   const allSlugs = Array.from(new Set(locations.map((l) => l.slug)));
 
   const invite = useMutation({
-    mutationFn: () => collaboratorsApi.invite(email.trim(), slugs),
+    mutationFn: () => collaboratorsApi.invite(email.trim(), slugs, displayName.trim() || undefined),
     onSuccess: (res) => {
       setResult({ email: res.email, pwd: res.tempPassword });
       setCopied(false);
@@ -87,7 +88,7 @@ export function CollaboratorInvite() {
                 <Button onClick={() => navigate('/collaboratori')} className="bg-brown-600 hover:bg-brown-700">
                   Torna ai collaboratori
                 </Button>
-                <Button variant="outline" onClick={() => { setResult(null); setEmail(''); setSlugs([]); }}>
+                <Button variant="outline" onClick={() => { setResult(null); setEmail(''); setSlugs([]); setDisplayName(''); }}>
                   Invita un altro
                 </Button>
               </div>
@@ -98,6 +99,11 @@ export function CollaboratorInvite() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardContent className="space-y-4 pt-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="c-name">Nome visualizzato <span className="text-muted-foreground font-normal">(opzionale)</span></Label>
+                <Input id="c-name" value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)} placeholder="Es. Fra Marco" />
+              </div>
               <div className="space-y-1.5">
                 <Label htmlFor="c-email">Email del collaboratore</Label>
                 <Input id="c-email" type="email" value={email}
