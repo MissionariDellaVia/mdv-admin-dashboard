@@ -66,7 +66,7 @@ export function LocationList() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-mdv-darkest">Luoghi</h1>
+          <h1 className="text-3xl font-bold text-mdv-darkest flex items-center gap-2"><MapPin className="h-7 w-7" /> Luoghi</h1>
           <p className="text-muted-foreground mt-1">Santuari, attività e info ricorrenti</p>
         </div>
         {isAdmin && (
