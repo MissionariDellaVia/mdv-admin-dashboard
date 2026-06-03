@@ -45,15 +45,16 @@ serve(async (req) => {
     if (callerProfile?.role !== "admin") return json({ error: "Solo gli admin" }, 403);
 
     // 3. Valida l'input.
-    const { email, slugs } = await req.json() as { email?: string; slugs?: string[] };
+    const { email, slugs, displayName } = await req.json() as { email?: string; slugs?: string[]; displayName?: string };
     if (!email || !Array.isArray(slugs) || slugs.length === 0) {
       return json({ error: "email e almeno un luogo sono richiesti" }, 400);
     }
 
-    // 4. Crea l'utente già attivo con password temporanea.
+    // 4. Crea l'utente già attivo con password temporanea (+ nome visualizzato opzionale).
     const password = tempPassword();
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email, password, email_confirm: true,
+      user_metadata: displayName && displayName.trim() ? { display_name: displayName.trim() } : undefined,
     });
     if (createErr || !created.user) {
       return json({ error: createErr?.message ?? "Creazione utente fallita" }, 400);
