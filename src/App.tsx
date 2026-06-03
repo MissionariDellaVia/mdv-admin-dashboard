@@ -13,6 +13,7 @@ import { SeedList } from '@/pages/seeds/SeedList';
 import { SeedCreate } from '@/pages/seeds/SeedCreate';
 import { LocationList } from '@/pages/locations/LocationList';
 import { LocationEdit } from '@/pages/locations/LocationEdit';
+import { ChangePassword } from '@/pages/ChangePassword';
 import { Toaster } from '@/components/ui/toaster';
 
 const queryClient = new QueryClient({
@@ -25,8 +26,8 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute() {
-  const { user, loading } = useAuth();
-  
+  const { user, loading, mustChangePassword } = useAuth();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brown-50">
@@ -38,20 +39,26 @@ function ProtectedRoute() {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (mustChangePassword) return <Navigate to="/cambio-password" replace />;
 
   return <Outlet />;
 }
 
 function PublicRoute() {
   const { user, loading } = useAuth();
-  
+
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
-  
+
   return <Outlet />;
+}
+
+function RequireUser({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
 }
 
 function App() {
@@ -62,7 +69,12 @@ function App() {
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
           </Route>
-          
+
+          <Route
+            path="/cambio-password"
+            element={<RequireUser><ChangePassword /></RequireUser>}
+          />
+
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
               <Route path="/" element={<Dashboard />} />
