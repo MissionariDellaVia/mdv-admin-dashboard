@@ -43,10 +43,14 @@ export function useAuth() {
         setLoading(false);
       }
     })();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // NB: il callback NON deve await-are chiamate supabase. GoTrue tiene un lock
+    // interno mentre esegue questo handler; una query awaited qui deadlocka l'intero
+    // client (spinner "Caricamento" infinito + ogni invoke/query bloccata).
+    // Differiamo il load del profilo fuori dal lock con un setTimeout(0).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;
       setUser(u);
-      await loadProfile(u);
+      setTimeout(() => { void loadProfile(u); }, 0);
     });
     return () => subscription.unsubscribe();
   }, [loadProfile]);
