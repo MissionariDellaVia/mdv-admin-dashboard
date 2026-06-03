@@ -66,7 +66,7 @@ export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', childr
         </div>
 
         <p className="mt-6 text-center text-xs tracking-wide text-[#d3b282]/55">
-          Missionari della Via · Via del Vangelo
+          Missionari della Via · Admin Dashboard
         </p>
       </motion.div>
     </div>
