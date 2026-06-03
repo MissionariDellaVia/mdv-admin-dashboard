@@ -86,6 +86,7 @@ export function EventForm({
       toast({
         title: 'Salvato',
         description: type === 'flyer' ? 'Volantino salvato' : 'Evento salvato',
+        variant: 'success',
       });
       onClose();
     } catch (e) {

@@ -61,7 +61,7 @@ export function CollaboratorsList() {
   const del = useMutation({
     mutationFn: (userId: string) => collaboratorsApi.delete(userId),
     onSuccess: () => {
-      toast({ title: 'Collaboratore rimosso' });
+      toast({ title: 'Collaboratore rimosso', variant: 'success' });
       setDeleteTarget(null);
       queryClient.invalidateQueries({ queryKey: ['collaborators'] });
     },
@@ -71,7 +71,7 @@ export function CollaboratorsList() {
   const saveAssign = useMutation({
     mutationFn: ({ id, next }: { id: string; next: string[] }) => collaboratorsApi.setAssignments(id, next),
     onSuccess: () => {
-      toast({ title: 'Assegnazioni aggiornate' });
+      toast({ title: 'Assegnazioni aggiornate', variant: 'success' });
       setEditing(null);
       queryClient.invalidateQueries({ queryKey: ['collaborators'] });
     },

@@ -62,7 +62,7 @@ export function GospelCreate() {
       if (isEdit) {
         queryClient.invalidateQueries({ queryKey: ['gospel', id] });
       }
-      toast({ title: 'Successo', description: isEdit ? 'Vangelo aggiornato' : 'Vangelo creato' });
+      toast({ title: 'Successo', description: isEdit ? 'Vangelo aggiornato' : 'Vangelo creato', variant: 'success' });
       navigate('/gospels');
     },
     onError: (error: Error) => { toast({ title: 'Errore', description: error.message, variant: 'destructive' }); },

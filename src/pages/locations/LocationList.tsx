@@ -43,7 +43,7 @@ export function LocationList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Eliminato', description: 'Luogo e tutte le lingue eliminate' });
+      toast({ title: 'Eliminato', description: 'Luogo e tutte le lingue eliminate', variant: 'success' });
     },
     onError: (e: Error) => toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
   });

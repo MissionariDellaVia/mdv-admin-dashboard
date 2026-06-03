@@ -91,7 +91,7 @@ export function GospelDailyCreate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gospel-daily"] });
-      toast({ title: "Successo", description: "Via del Vangelo creata" });
+      toast({ title: "Successo", description: "Via del Vangelo creata", variant: "success" });
       navigate("/gospel-daily");
     },
     onError: (error: Error) => {

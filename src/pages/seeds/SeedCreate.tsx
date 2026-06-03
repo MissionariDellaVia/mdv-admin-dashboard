@@ -57,7 +57,7 @@ export function SeedCreate() {
     mutationFn: (data: FormData) => isEdit ? seedsApi.update(Number(id), data) : seedsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seeds'] });
-      toast({ title: 'Successo', description: isEdit ? 'Semino aggiornato' : 'Semino creato' });
+      toast({ title: 'Successo', description: isEdit ? 'Semino aggiornato' : 'Semino creato', variant: 'success' });
       navigate('/seeds');
     },
     onError: (error: Error) => { toast({ title: 'Errore', description: error.message, variant: 'destructive' }); },

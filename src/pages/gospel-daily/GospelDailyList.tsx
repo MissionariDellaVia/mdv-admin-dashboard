@@ -64,7 +64,7 @@ export function GospelDailyList() {
     mutationFn: gospelDailyApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gospel-daily'] });
-      toast({ title: 'Successo', description: 'Via del Vangelo eliminata' });
+      toast({ title: 'Successo', description: 'Via del Vangelo eliminata', variant: 'success' });
       setDeleteId(null);
     },
     onError: (error: Error) => {

@@ -74,7 +74,7 @@ export function GospelList() {
     mutationFn: gospelsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gospels'] });
-      toast({ title: 'Successo', description: 'Vangelo eliminato' });
+      toast({ title: 'Successo', description: 'Vangelo eliminato', variant: 'success' });
       setDeleteId(null);
     },
     onError: (error: Error) => {

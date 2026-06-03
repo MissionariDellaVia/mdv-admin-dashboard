@@ -32,7 +32,7 @@ export function SeedList() {
     mutationFn: seedsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seeds'] });
-      toast({ title: 'Successo', description: 'Semino eliminato' });
+      toast({ title: 'Successo', description: 'Semino eliminato', variant: 'success' });
       setDeleteId(null);
     },
     onError: (error: Error) => {
@@ -44,7 +44,7 @@ export function SeedList() {
     mutationFn: ({ id, active }: { id: number; active: boolean }) => seedsApi.toggleActive(id, active),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seeds'] });
-      toast({ title: 'Successo', description: 'Stato aggiornato' });
+      toast({ title: 'Successo', description: 'Stato aggiornato', variant: 'success' });
     },
   });
 

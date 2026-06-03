@@ -216,7 +216,7 @@ export function LocationEdit() {
       setExtraDirty(false);
       queryClient.invalidateQueries({ queryKey: ['locations'] });
       queryClient.invalidateQueries({ queryKey: ['location', loc.slug] });
-      toast({ title: 'Salvato' });
+      toast({ title: 'Salvato', variant: 'success' });
       if (!isEdit) navigate('/locations/' + loc.slug);
     },
     onError: (e: Error) =>

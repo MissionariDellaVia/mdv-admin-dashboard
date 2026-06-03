@@ -48,7 +48,7 @@ export function EventRow({
     mutationFn: () => eventsApi.delete(event.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', slug, lang] });
-      toast({ title: 'Eliminato' });
+      toast({ title: 'Eliminato', variant: 'success' });
     },
     onError: (e: Error) => toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
   });

@@ -197,7 +197,7 @@ export function GospelDailyEdit() {
       queryClient.invalidateQueries({ queryKey: ["gospel-daily", id] });
       queryClient.invalidateQueries({ queryKey: ["comment-sections", id] });
       queryClient.invalidateQueries({ queryKey: ["media", id] });
-      toast({ title: "Successo", description: "Via del Vangelo aggiornata" });
+      toast({ title: "Successo", description: "Via del Vangelo aggiornata", variant: "success" });
       navigate("/gospel-daily");
     },
     onError: (error: Error) => {
