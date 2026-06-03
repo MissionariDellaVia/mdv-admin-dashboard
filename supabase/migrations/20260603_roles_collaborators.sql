@@ -21,22 +21,28 @@ CREATE INDEX IF NOT EXISTS idx_location_editors_user ON location_editors(user_id
 
 -- Helper usati dalle RLS. SECURITY DEFINER: evitano ricorsione di RLS su profiles.
 CREATE OR REPLACE FUNCTION is_admin() RETURNS BOOLEAN
-  LANGUAGE sql SECURITY DEFINER STABLE AS $$
-    SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin');
+  LANGUAGE sql SECURITY DEFINER STABLE
+  SET search_path = ''
+  AS $$
+    SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
   $$;
 
 CREATE OR REPLACE FUNCTION can_edit_location(slug TEXT) RETURNS BOOLEAN
-  LANGUAGE sql SECURITY DEFINER STABLE AS $$
-    SELECT is_admin()
-        OR EXISTS (SELECT 1 FROM location_editors
+  LANGUAGE sql SECURITY DEFINER STABLE
+  SET search_path = ''
+  AS $$
+    SELECT public.is_admin()
+        OR EXISTS (SELECT 1 FROM public.location_editors
                    WHERE user_id = auth.uid() AND location_slug = slug);
   $$;
 
 -- Il collaboratore azzera il proprio flag al primo cambio password (no escalation:
 -- non tocca direttamente la tabella, quindi non può cambiarsi il ruolo).
 CREATE OR REPLACE FUNCTION complete_password_change() RETURNS VOID
-  LANGUAGE sql SECURITY DEFINER AS $$
-    UPDATE profiles SET must_change_password = false WHERE id = auth.uid();
+  LANGUAGE sql SECURITY DEFINER
+  SET search_path = ''
+  AS $$
+    UPDATE public.profiles SET must_change_password = false WHERE id = auth.uid();
   $$;
 
 -- ANTI-REGRESSIONE: tutti gli utenti già esistenti diventano admin.
