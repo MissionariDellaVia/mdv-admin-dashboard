@@ -261,18 +261,20 @@ export const gospelDailyApi = {
     return count || 0;
   },
 
-  // Copertura calendario: quanti dei prossimi `days` giorni (da oggi incluso) hanno una Via del Vangelo.
-  async getUpcomingCoverage(days = 30) {
-    const today = new Date();
-    const start = today.toISOString().slice(0, 10);
-    const end = new Date(today);
-    end.setDate(end.getDate() + days - 1);
-    const endStr = end.toISOString().slice(0, 10);
+  // Copertura del MESE CORRENTE: quanti giorni del mese hanno una Via del Vangelo.
+  async getCurrentMonthCoverage() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth(); // 0-based
+    const total = new Date(y, m + 1, 0).getDate(); // giorni nel mese corrente
+    const mm = String(m + 1).padStart(2, '0');
+    const first = `${y}-${mm}-01`;
+    const last = `${y}-${mm}-${String(total).padStart(2, '0')}`;
     const { data, error } = await supabase
-      .from('gospel_daily').select('date').gte('date', start).lte('date', endStr);
+      .from('gospel_daily').select('date').gte('date', first).lte('date', last);
     if (error) throw error;
     const covered = new Set((data ?? []).map((r: { date: string }) => r.date)).size;
-    return { covered, total: days };
+    return { covered, total };
   },
 
   // Conteggi di pubblicazione per mese, ultimi `months` mesi (ordine cronologico).

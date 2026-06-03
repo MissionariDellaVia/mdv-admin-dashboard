@@ -132,10 +132,13 @@ describe('gospelDailyApi.getMonthlyCounts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// getUpcomingCoverage
+// getCurrentMonthCoverage
 // ---------------------------------------------------------------------------
-describe('gospelDailyApi.getUpcomingCoverage', () => {
-  it('conta le date uniche coperte nei prossimi N giorni', async () => {
+describe('gospelDailyApi.getCurrentMonthCoverage', () => {
+  const daysInCurrentMonth = () =>
+    new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+
+  it('conta i giorni unici coperti nel mese', async () => {
     const mockLte = vi.fn().mockResolvedValue({
       data: [
         { date: '2026-06-03' },
@@ -148,34 +151,24 @@ describe('gospelDailyApi.getUpcomingCoverage', () => {
     const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
     mockFrom.mockReturnValue({ select: mockSelect });
 
-    const result = await gospelDailyApi.getUpcomingCoverage(30);
+    const result = await gospelDailyApi.getCurrentMonthCoverage();
 
     expect(mockFrom).toHaveBeenCalledWith('gospel_daily');
     expect(mockSelect).toHaveBeenCalledWith('date');
     expect(result.covered).toBe(2);
-    expect(result.total).toBe(30);
+    expect(result.total).toBe(daysInCurrentMonth());
   });
 
-  it('ritorna covered=0 quando non ci sono giorni coperti', async () => {
+  it('covered=0 quando vuoto', async () => {
     const mockLte = vi.fn().mockResolvedValue({ data: [], error: null });
     const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
     const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
     mockFrom.mockReturnValue({ select: mockSelect });
 
-    const result = await gospelDailyApi.getUpcomingCoverage(30);
+    const result = await gospelDailyApi.getCurrentMonthCoverage();
 
-    expect(result).toEqual({ covered: 0, total: 30 });
-  });
-
-  it('rispetta il parametro days personalizzato', async () => {
-    const mockLte = vi.fn().mockResolvedValue({ data: [], error: null });
-    const mockGte = vi.fn().mockReturnValue({ lte: mockLte });
-    const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
-    mockFrom.mockReturnValue({ select: mockSelect });
-
-    const result = await gospelDailyApi.getUpcomingCoverage(7);
-
-    expect(result.total).toBe(7);
+    expect(result.covered).toBe(0);
+    expect(result.total).toBe(daysInCurrentMonth());
   });
 
   it('propaga l errore di supabase', async () => {
@@ -184,6 +177,6 @@ describe('gospelDailyApi.getUpcomingCoverage', () => {
     const mockSelect = vi.fn().mockReturnValue({ gte: mockGte });
     mockFrom.mockReturnValue({ select: mockSelect });
 
-    await expect(gospelDailyApi.getUpcomingCoverage(30)).rejects.toThrow('coverage error');
+    await expect(gospelDailyApi.getCurrentMonthCoverage()).rejects.toThrow('coverage error');
   });
 });

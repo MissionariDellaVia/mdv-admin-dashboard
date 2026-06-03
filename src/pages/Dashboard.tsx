@@ -77,9 +77,9 @@ export function Dashboard() {
     queryFn: gospelDailyApi.getCommentedCount,
   });
 
-  const { data: coverage = { covered: 0, total: 30 } } = useQuery({
-    queryKey: ['gospel-daily-upcoming-coverage'],
-    queryFn: () => gospelDailyApi.getUpcomingCoverage(30),
+  const { data: coverage = { covered: 0, total: 31 } } = useQuery({
+    queryKey: ['gospel-daily-month-coverage'],
+    queryFn: () => gospelDailyApi.getCurrentMonthCoverage(),
   });
 
   const { data: monthlyBuckets = [] } = useQuery({
@@ -342,9 +342,9 @@ export function Dashboard() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <CalendarDays className="h-5 w-5 text-brown-600" />
-                Copertura · prossimi 30 giorni
+                Copertura · mese corrente
               </CardTitle>
-              <CardDescription>Giorni con una Via del Vangelo programmata</CardDescription>
+              <CardDescription>Giorni del mese con una Via del Vangelo</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="text-center py-1">
@@ -364,7 +364,7 @@ export function Dashboard() {
 
               <p className="text-sm text-muted-foreground">
                 <span className="font-medium text-brown-800">{coverage.total - coverage.covered}</span>{' '}
-                giorni ancora senza Via del Vangelo
+                giorni del mese senza Via del Vangelo
               </p>
             </CardContent>
           </Card>
