@@ -52,8 +52,8 @@ export function Login() {
         <Button
           type="submit"
           disabled={loading}
-          className="mt-2 h-11 w-full bg-mdv-medium text-base font-medium text-mdv-cream shadow-lg
-                     shadow-brown-900/25 transition-all hover:-translate-y-0.5 hover:bg-mdv-dark"
+          className="mt-2 h-11 w-full bg-brown-600 text-base font-medium text-mdv-cream shadow-lg
+                     shadow-brown-900/25 transition-all hover:-translate-y-0.5 hover:bg-brown-700"
         >
           {loading ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Accesso in corso...</>

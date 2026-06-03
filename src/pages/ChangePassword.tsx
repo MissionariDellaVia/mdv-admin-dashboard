@@ -71,8 +71,8 @@ export function ChangePassword() {
         <Button
           type="submit"
           disabled={!canSubmit}
-          className="mt-1 h-11 w-full bg-mdv-medium text-base font-medium text-mdv-cream shadow-lg
-                     shadow-brown-900/25 transition-all hover:-translate-y-0.5 hover:bg-mdv-dark
+          className="mt-1 h-11 w-full bg-brown-600 text-base font-medium text-mdv-cream shadow-lg
+                     shadow-brown-900/25 transition-all hover:-translate-y-0.5 hover:bg-brown-700
                      disabled:translate-y-0 disabled:opacity-60"
         >
           {loading ? (

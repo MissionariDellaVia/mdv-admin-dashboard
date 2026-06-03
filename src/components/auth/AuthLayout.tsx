@@ -19,10 +19,10 @@ interface AuthLayoutProps {
 export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', children }: AuthLayoutProps) {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10
-                    bg-[radial-gradient(circle_at_50%_-10%,#6e4f3a_0%,#472b21_45%,#281D02_100%)]">
+                    bg-[radial-gradient(circle_at_50%_-10%,#6e4f3a_0%,#553a2a_50%,#472b21_100%)]">
       {/* Alone dorato come luce di candela */}
       <div className="pointer-events-none absolute -top-44 left-1/2 h-[520px] w-[520px] -translate-x-1/2
-                      rounded-full bg-[#A67D51]/25 blur-[130px]" />
+                      rounded-full bg-[#d3b282]/20 blur-[130px]" />
       {/* Grana */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-soft-light"
            style={{ backgroundImage: GRAIN }} />
