@@ -13,6 +13,7 @@ import { SeedList } from '@/pages/seeds/SeedList';
 import { SeedCreate } from '@/pages/seeds/SeedCreate';
 import { LocationList } from '@/pages/locations/LocationList';
 import { LocationEdit } from '@/pages/locations/LocationEdit';
+import { CollaboratorsList } from '@/pages/collaborators/CollaboratorsList';
 import { ChangePassword } from '@/pages/ChangePassword';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -54,6 +55,13 @@ function PublicRoute() {
   return <Outlet />;
 }
 
+function AdminOnly() {
+  const { isAdmin, loading } = useAuth();
+  if (loading) return null;
+  if (!isAdmin) return <Navigate to="/locations" replace />;
+  return <Outlet />;
+}
+
 function RequireUser({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -77,18 +85,21 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/gospel-daily" element={<GospelDailyList />} />
-              <Route path="/gospel-daily/new" element={<GospelDailyCreate />} />
-              <Route path="/gospel-daily/:id" element={<GospelDailyEdit />} />
-              <Route path="/gospels" element={<GospelList />} />
-              <Route path="/gospels/new" element={<GospelCreate />} />
-              <Route path="/gospels/:id" element={<GospelCreate />} />
-              <Route path="/seeds" element={<SeedList />} />
-              <Route path="/seeds/new" element={<SeedCreate />} />
-              <Route path="/seeds/:id" element={<SeedCreate />} />
+              <Route element={<AdminOnly />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/gospel-daily" element={<GospelDailyList />} />
+                <Route path="/gospel-daily/new" element={<GospelDailyCreate />} />
+                <Route path="/gospel-daily/:id" element={<GospelDailyEdit />} />
+                <Route path="/gospels" element={<GospelList />} />
+                <Route path="/gospels/new" element={<GospelCreate />} />
+                <Route path="/gospels/:id" element={<GospelCreate />} />
+                <Route path="/seeds" element={<SeedList />} />
+                <Route path="/seeds/new" element={<SeedCreate />} />
+                <Route path="/seeds/:id" element={<SeedCreate />} />
+                <Route path="/locations/new" element={<LocationEdit />} />
+                <Route path="/collaboratori" element={<CollaboratorsList />} />
+              </Route>
               <Route path="/locations" element={<LocationList />} />
-              <Route path="/locations/new" element={<LocationEdit />} />
               <Route path="/locations/:slug" element={<LocationEdit />} />
             </Route>
           </Route>

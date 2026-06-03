@@ -5,10 +5,12 @@ import {
   Sprout,
   LayoutDashboard,
   X,
-  MapPin
+  MapPin,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SidebarProps {
   open?: boolean;
@@ -16,14 +18,18 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Via del Vangelo', href: '/gospel-daily', icon: Calendar },
-  { name: 'Vangeli', href: '/gospels', icon: BookOpen },
-  { name: 'Semini', href: '/seeds', icon: Sprout },
-  { name: 'Luoghi', href: '/locations', icon: MapPin },
+  { name: 'Dashboard', href: '/', icon: LayoutDashboard, adminOnly: true },
+  { name: 'Via del Vangelo', href: '/gospel-daily', icon: Calendar, adminOnly: true },
+  { name: 'Vangeli', href: '/gospels', icon: BookOpen, adminOnly: true },
+  { name: 'Semini', href: '/seeds', icon: Sprout, adminOnly: true },
+  { name: 'Luoghi', href: '/locations', icon: MapPin, adminOnly: false },
+  { name: 'Collaboratori', href: '/collaboratori', icon: Users, adminOnly: true },
 ];
 
 export function Sidebar({ open, onClose }: SidebarProps) {
+  const { isAdmin } = useAuth();
+  const visibleNav = navigation.filter((item) => isAdmin || !item.adminOnly);
+
   return (
     <>
       {/* Mobile overlay */}
@@ -61,7 +67,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="mt-6 px-3">
           <ul className="space-y-1">
-            {navigation.map((item) => (
+            {visibleNav.map((item) => (
               <li key={item.name}>
                 <NavLink
                   to={item.href}
