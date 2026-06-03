@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collaboratorsApi, locationsApi } from '@/lib/api';
@@ -119,7 +119,7 @@ export function CollaboratorsList() {
           </p>
         </div>
         <Button onClick={() => { setEmail(''); setSlugs([]); setInviteOpen(true); }}
-          className="bg-gold-500 hover:bg-gold-400 text-white shadow-sm hover:shadow-md transition-all">
+          className="bg-brown-600 hover:bg-brown-700 shadow-sm hover:shadow-md transition-all">
           <Plus className="mr-2 h-4 w-4" /> Invita
         </Button>
       </div>
@@ -245,7 +245,7 @@ export function CollaboratorsList() {
             <Button variant="outline" onClick={() => setInviteOpen(false)}>Annulla</Button>
             <Button onClick={() => invite.mutate()}
               disabled={invite.isPending || !email || slugs.length === 0}
-              className="bg-gold-500 hover:bg-gold-400 text-white">
+              className="bg-brown-600 hover:bg-brown-700">
               {invite.isPending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creazione...</>) : 'Crea collaboratore'}
             </Button>
           </DialogFooter>
@@ -275,7 +275,7 @@ export function CollaboratorsList() {
             <Button variant="outline" onClick={() => setEditing(null)}>Annulla</Button>
             <Button onClick={() => editing && saveAssign.mutate({ id: editing.id, next: editSlugs })}
               disabled={saveAssign.isPending}
-              className="bg-gold-500 hover:bg-gold-400 text-white">
+              className="bg-brown-600 hover:bg-brown-700">
               {saveAssign.isPending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvataggio...</>) : 'Salva'}
             </Button>
           </DialogFooter>
@@ -350,7 +350,7 @@ export function CollaboratorsList() {
           </div>
 
           <DialogFooter>
-            <Button onClick={() => setTempPwd(null)} className="bg-gold-500 hover:bg-gold-400 text-white">
+            <Button onClick={() => setTempPwd(null)} className="bg-brown-600 hover:bg-brown-700">
               Ho salvato la password
             </Button>
           </DialogFooter>

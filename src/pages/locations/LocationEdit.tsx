@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+﻿import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -509,7 +509,7 @@ export function LocationEdit() {
           <Button
             type="submit"
             disabled={save.isPending}
-            className="bg-gold-500 hover:bg-gold-400 text-white"
+            className="bg-brown-600 hover:bg-brown-700"
           >
             <Save className="mr-2 h-4 w-4" />
             {save.isPending ? 'Salvataggio...' : 'Salva'}

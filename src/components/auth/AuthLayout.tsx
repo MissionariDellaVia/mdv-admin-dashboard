@@ -19,10 +19,10 @@ interface AuthLayoutProps {
 export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', children }: AuthLayoutProps) {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10
-                    bg-[radial-gradient(circle_at_50%_-10%,#3f2a02_0%,#2c2003_55%,#281d02_100%)]">
+                    bg-[radial-gradient(circle_at_50%_-10%,#6e4f3a_0%,#472b21_45%,#281D02_100%)]">
       {/* Alone dorato come luce di candela */}
       <div className="pointer-events-none absolute -top-44 left-1/2 h-[520px] w-[520px] -translate-x-1/2
-                      rounded-full bg-gold-500/25 blur-[130px]" />
+                      rounded-full bg-[#A67D51]/25 blur-[130px]" />
       {/* Grana */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-soft-light"
            style={{ backgroundImage: GRAIN }} />
@@ -36,7 +36,7 @@ export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', childr
         {/* Logo con alone */}
         <div className="flex justify-center">
           <div className="relative">
-            <div className="absolute inset-0 scale-125 rounded-full bg-gold-400/40 blur-2xl" />
+            <div className="absolute inset-0 scale-125 rounded-full bg-[#d3b282]/40 blur-2xl" />
             <img
               src="/logo.png"
               alt="Missionari della Via"
@@ -45,12 +45,12 @@ export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', childr
           </div>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-gold-300/30 bg-brown-50/95
+        <div className="mt-6 overflow-hidden rounded-2xl border border-[#d3b282]/30 bg-brown-50/95
                         shadow-[0_28px_70px_-20px_rgba(0,0,0,0.7)] backdrop-blur">
           {/* Filetto dorato superiore */}
-          <div className="h-1 w-full bg-gradient-to-r from-transparent via-gold-400 to-transparent" />
+          <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#A67D51] to-transparent" />
           <div className="px-8 pb-8 pt-7">
-            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-500">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A67D51]">
               {eyebrow}
             </p>
             <h1 className="mt-2 text-center font-display text-3xl font-bold leading-tight text-brown-800">
@@ -65,7 +65,7 @@ export function AuthLayout({ title, subtitle, eyebrow = 'Area riservata', childr
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs tracking-wide text-gold-300/60">
+        <p className="mt-6 text-center text-xs tracking-wide text-[#d3b282]/60">
           Missionari della Via · Admin Dashboard
         </p>
       </motion.div>

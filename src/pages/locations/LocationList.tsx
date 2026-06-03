@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { locationsApi, eventsApi } from '@/lib/api';
@@ -70,7 +70,7 @@ export function LocationList() {
           <p className="text-muted-foreground mt-1">Santuari, attività e info ricorrenti</p>
         </div>
         {isAdmin && (
-          <Button onClick={() => navigate('/locations/new')} className="bg-gold-500 hover:bg-gold-400 text-white">
+          <Button onClick={() => navigate('/locations/new')} className="bg-brown-600 hover:bg-brown-700">
             <Plus className="mr-2 h-4 w-4" /> Nuovo Luogo
           </Button>
         )}

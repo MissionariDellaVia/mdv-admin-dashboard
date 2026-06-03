@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+﻿import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -135,7 +135,7 @@ export function GospelCreate() {
           </CardContent>
         </Card>
         <div className="flex justify-center gap-3">
-          <Button type="submit" disabled={mutation.isPending} className="bg-gold-500 hover:bg-gold-400 text-white transition-colors">
+          <Button type="submit" disabled={mutation.isPending} className="bg-brown-600 hover:bg-brown-700 transition-colors">
             {mutation.isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvataggio...</>
             ) : (

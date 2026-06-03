@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+﻿import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -111,7 +111,7 @@ export function SeedCreate() {
           </CardContent>
         </Card>
         <div className="flex justify-center gap-4">
-          <Button type="submit" disabled={mutation.isPending} className="bg-gold-500 hover:bg-gold-400 text-white transition-colors">
+          <Button type="submit" disabled={mutation.isPending} className="bg-brown-600 hover:bg-brown-700 transition-colors">
             <Save className="mr-2 h-4 w-4" />{mutation.isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
           <Button type="button" variant="outline" onClick={() => navigate('/seeds')} className="hover:bg-brown-50 transition-colors">Annulla</Button>

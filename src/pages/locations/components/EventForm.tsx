@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { locationsApi, eventsApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -139,7 +139,7 @@ export function EventForm({
           size="sm"
           disabled={saving}
           onClick={handleSave}
-          className="bg-gold-500 hover:bg-gold-400 text-white"
+          className="bg-brown-600 hover:bg-brown-700"
         >
           {saving ? 'Salvando...' : 'Salva'}
         </Button>

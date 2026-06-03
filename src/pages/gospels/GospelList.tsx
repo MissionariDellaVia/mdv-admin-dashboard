@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -129,7 +129,7 @@ export function GospelList() {
             {totalCount} testi disponibili
           </p>
         </div>
-        <Button asChild className="bg-gold-500 hover:bg-gold-400 text-white shadow-sm hover:shadow-md transition-all">
+        <Button asChild className="bg-brown-600 hover:bg-brown-700 shadow-sm hover:shadow-md transition-all">
           <Link to="/gospels/new">
             <Plus className="mr-2 h-4 w-4" />
             Nuovo Vangelo

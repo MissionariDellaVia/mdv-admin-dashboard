@@ -42,7 +42,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-[rgba(40,29,2,0.9)] transform transition-transform duration-200 lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-mdv-medium transform transition-transform duration-200 lg:translate-x-0",
         open ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
@@ -74,8 +74,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   className={({ isActive }) => cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-gold-500 text-white"
-                      : "text-mdv-cream/70 hover:bg-gold-500/70 hover:text-white"
+                      ? "bg-mdv-light text-white"
+                      : "text-mdv-cream/70 hover:bg-mdv-light/70 hover:text-white"
                   )}
                   onClick={onClose}
                 >
@@ -89,7 +89,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-mdv-darkest">
-          <p className="text-xs text-gold-300/70 text-center">
+          <p className="text-xs text-mdv-cream/70 text-center">
             MdV Dashboard v{__APP_VERSION__}
           </p>
         </div>
