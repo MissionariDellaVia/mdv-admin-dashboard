@@ -1,11 +1,11 @@
 ﻿import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collaboratorsApi, locationsApi } from '@/lib/api';
 import type { Collaborator } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -15,13 +15,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Plus, Pencil, KeyRound, Trash2, Loader2, Search, Copy, Check, TriangleAlert } from 'lucide-react';
 
 export function CollaboratorsList() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [slugs, setSlugs] = useState<string[]>([]);
   const [editing, setEditing] = useState<Collaborator | null>(null);
   const [editSlugs, setEditSlugs] = useState<string[]>([]);
   const [resetTarget, setResetTarget] = useState<Collaborator | null>(null);
@@ -50,16 +48,6 @@ export function CollaboratorsList() {
     setCopied(false);
     setTempPwd({ email, pwd });
   };
-
-  const invite = useMutation({
-    mutationFn: () => collaboratorsApi.invite(email.trim(), slugs),
-    onSuccess: (res) => {
-      showTempPwd(res.email, res.tempPassword);
-      setEmail(''); setSlugs([]); setInviteOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['collaborators'] });
-    },
-    onError: (e: Error) => toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
-  });
 
   const resetPwd = useMutation({
     mutationFn: (userId: string) => collaboratorsApi.resetPassword(userId),
@@ -118,7 +106,7 @@ export function CollaboratorsList() {
             {collaborators.length} {collaborators.length === 1 ? 'persona' : 'persone'} che gestiscono i luoghi assegnati
           </p>
         </div>
-        <Button onClick={() => { setEmail(''); setSlugs([]); setInviteOpen(true); }}
+        <Button onClick={() => navigate('/collaboratori/nuovo')}
           className="bg-brown-600 hover:bg-brown-700 shadow-sm hover:shadow-md transition-all">
           <Plus className="mr-2 h-4 w-4" /> Invita
         </Button>
@@ -209,48 +197,6 @@ export function CollaboratorsList() {
           </TableBody>
         </Table>
       </Card>
-
-      {/* Invite dialog */}
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Invita collaboratore</DialogTitle>
-            <DialogDescription>
-              Crea un account e i luoghi che potrà gestire. Riceverai una password temporanea da comunicargli.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="c-email">Email del collaboratore</Label>
-              <Input id="c-email" type="email" value={email}
-                onChange={(e) => setEmail(e.target.value)} placeholder="nome@example.com" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Luoghi assegnati</Label>
-              <div className="flex flex-wrap gap-2">
-                {allSlugs.map((slug) => (
-                  <button key={slug} type="button" onClick={() => setSlugs((p) => toggle(p, slug))}
-                    className={`text-xs px-2 py-1 rounded border ${
-                      slugs.includes(slug)
-                        ? 'bg-brown-600 text-white border-brown-600'
-                        : 'border-muted-foreground/30'
-                    }`}>
-                    {slug}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setInviteOpen(false)}>Annulla</Button>
-            <Button onClick={() => invite.mutate()}
-              disabled={invite.isPending || !email || slugs.length === 0}
-              className="bg-brown-600 hover:bg-brown-700">
-              {invite.isPending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creazione...</>) : 'Crea collaboratore'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit assignments dialog */}
       <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>

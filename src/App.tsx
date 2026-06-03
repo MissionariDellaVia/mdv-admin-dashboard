@@ -14,6 +14,7 @@ import { SeedCreate } from '@/pages/seeds/SeedCreate';
 import { LocationList } from '@/pages/locations/LocationList';
 import { LocationEdit } from '@/pages/locations/LocationEdit';
 import { CollaboratorsList } from '@/pages/collaborators/CollaboratorsList';
+import { CollaboratorInvite } from '@/pages/collaborators/CollaboratorInvite';
 import { ChangePassword } from '@/pages/ChangePassword';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -97,6 +98,7 @@ function App() {
                 <Route path="/seeds/new" element={<SeedCreate />} />
                 <Route path="/seeds/:id" element={<SeedCreate />} />
                 <Route path="/locations/new" element={<LocationEdit />} />
+                <Route path="/collaboratori/nuovo" element={<CollaboratorInvite />} />
                 <Route path="/collaboratori" element={<CollaboratorsList />} />
               </Route>
               <Route path="/locations" element={<LocationList />} />
