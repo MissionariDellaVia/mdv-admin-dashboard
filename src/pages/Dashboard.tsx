@@ -14,7 +14,8 @@ import {
   Clock,
   MessageSquare,
   MapPin,
-  Users
+  Users,
+  BarChart3
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -68,6 +69,17 @@ export function Dashboard() {
     queryFn: () => collaboratorsApi.list(),
   });
 
+  // Insights queries
+  const { data: commentedCount = 0 } = useQuery({
+    queryKey: ['gospel-daily-commented'],
+    queryFn: gospelDailyApi.getCommentedCount,
+  });
+
+  const { data: monthlyBuckets = [] } = useQuery({
+    queryKey: ['gospel-daily-monthly'],
+    queryFn: () => gospelDailyApi.getMonthlyCounts(6),
+  });
+
   const attivitaCount = Object.values(eventCounts).reduce((sum, n) => sum + n, 0);
 
   // Solo i dati recenti per la lista (limit 5)
@@ -75,6 +87,11 @@ export function Dashboard() {
     queryKey: ['gospel-daily-recent'],
     queryFn: () => gospelDailyApi.getRecentWithComments(5),
   });
+
+  // Bar chart helpers
+  const maxCount = Math.max(1, ...monthlyBuckets.map(b => b.count));
+  const coveragePercent = Math.round((commentedCount / Math.max(1, gospelDailyCount)) * 100);
+  const avgComments = (totalComments / Math.max(1, gospelDailyCount)).toFixed(1);
 
   return (
     <motion.div
@@ -99,101 +116,138 @@ export function Dashboard() {
         </Button>
       </motion.div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid — cards are now nav links */}
       <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-brown-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-brown-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Vie del Vangelo</CardTitle>
-            <div className="p-2 rounded-lg bg-brown-100 text-brown-600 group-hover:scale-110 transition-transform">
-              <Calendar className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-brown-900">{gospelDailyCount}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              <span className="text-brown-600 font-medium">{totalComments}</span> commenti totali
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Vangeli</CardTitle>
-            <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:scale-110 transition-transform">
-              <BookOpen className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-brown-900">{gospelsCount}</div>
-            <p className="text-xs text-muted-foreground mt-2">Testi disponibili nel database</p>
-          </CardContent>
-        </Card>
+        {/* Vie del Vangelo */}
+        <Link to="/gospel-daily" className="group cursor-pointer">
+          <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-brown-500 h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-brown-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Vie del Vangelo</CardTitle>
+              <div className="flex items-center gap-1">
+                <div className="p-2 rounded-lg bg-brown-100 text-brown-600 group-hover:scale-110 transition-transform">
+                  <Calendar className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-3 w-3 text-brown-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-brown-900">{gospelDailyCount}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                <span className="text-brown-600 font-medium">{totalComments}</span> commenti totali
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Semini</CardTitle>
-            <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:scale-110 transition-transform">
-              <Sprout className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-brown-900">{seedsCounts.total}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              <span className="text-green-600 font-medium">{seedsCounts.active}</span> attivi su {seedsCounts.total}
-            </p>
-          </CardContent>
-        </Card>
+        {/* Vangeli */}
+        <Link to="/gospels" className="group cursor-pointer">
+          <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500 h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Vangeli</CardTitle>
+              <div className="flex items-center gap-1">
+                <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:scale-110 transition-transform">
+                  <BookOpen className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-3 w-3 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-brown-900">{gospelsCount}</div>
+              <p className="text-xs text-muted-foreground mt-2">Testi disponibili nel database</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Commenti</CardTitle>
-            <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:scale-110 transition-transform">
-              <MessageSquare className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-brown-900">{totalComments}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Commenti e riflessioni scritte
-            </p>
-          </CardContent>
-        </Card>
+        {/* Semini */}
+        <Link to="/seeds" className="group cursor-pointer">
+          <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500 h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Semini</CardTitle>
+              <div className="flex items-center gap-1">
+                <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:scale-110 transition-transform">
+                  <Sprout className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-3 w-3 text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-brown-900">{seedsCounts.total}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                <span className="text-green-600 font-medium">{seedsCounts.active}</span> attivi su {seedsCounts.total}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-amber-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Luoghi</CardTitle>
-            <div className="p-2 rounded-lg bg-amber-100 text-amber-600 group-hover:scale-110 transition-transform">
-              <MapPin className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-brown-900">{locations.length}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              <span className="text-amber-600 font-medium">{attivitaCount}</span> attività e volantini
-            </p>
-          </CardContent>
-        </Card>
+        {/* Commenti */}
+        <Link to="/gospel-daily" className="group cursor-pointer">
+          <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500 h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Commenti</CardTitle>
+              <div className="flex items-center gap-1">
+                <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:scale-110 transition-transform">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-3 w-3 text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-brown-900">{totalComments}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Commenti e riflessioni scritte
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-teal-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Collaboratori</CardTitle>
-            <div className="p-2 rounded-lg bg-teal-100 text-teal-600 group-hover:scale-110 transition-transform">
-              <Users className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-brown-900">{collaborators.length}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Gestiscono i luoghi assegnati
-            </p>
-          </CardContent>
-        </Card>
+        {/* Luoghi */}
+        <Link to="/locations" className="group cursor-pointer">
+          <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-amber-500 h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Luoghi</CardTitle>
+              <div className="flex items-center gap-1">
+                <div className="p-2 rounded-lg bg-amber-100 text-amber-600 group-hover:scale-110 transition-transform">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-3 w-3 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-brown-900">{locations.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                <span className="text-amber-600 font-medium">{attivitaCount}</span> attività e volantini
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Collaboratori */}
+        <Link to="/collaboratori" className="group cursor-pointer">
+          <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-teal-500 h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Collaboratori</CardTitle>
+              <div className="flex items-center gap-1">
+                <div className="p-2 rounded-lg bg-teal-100 text-teal-600 group-hover:scale-110 transition-transform">
+                  <Users className="h-4 w-4" />
+                </div>
+                <ArrowRight className="h-3 w-3 text-teal-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-brown-900">{collaborators.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Gestiscono i luoghi assegnati
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </motion.div>
 
       {/* Main Content Grid */}
@@ -333,31 +387,93 @@ export function Dashboard() {
                   <p className="text-xs text-muted-foreground">Assegna luoghi a un aiutante</p>
                 </div>
               </Link>
-
-              <div className="pt-4 border-t mt-4">
-                <p className="text-xs text-muted-foreground mb-3">Vai alle sezioni</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
-                    <Link to="/gospels">Vangeli</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
-                    <Link to="/gospel-daily">Via del Vangelo</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
-                    <Link to="/seeds">Semini</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
-                    <Link to="/locations">Luoghi</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
-                    <Link to="/collaboratori">Collaboratori</Link>
-                  </Button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      {/* Insights Row */}
+      <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
+
+        {/* Frequency bar chart — lg:col-span-2 */}
+        <Card className="shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-brown-600" />
+              Pubblicazioni · ultimi 6 mesi
+            </CardTitle>
+            <CardDescription>Frequenza di pubblicazione mensile</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-end justify-between gap-2 h-40 pt-2">
+              {monthlyBuckets.map((bucket) => {
+                const heightPct = Math.max(4, Math.round((bucket.count / maxCount) * 100));
+                const monthLabel = new Date(bucket.month + '-01').toLocaleDateString('it-IT', { month: 'short' });
+                return (
+                  <div key={bucket.month} className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
+                    <span className="text-xs font-semibold text-brown-700 leading-none">
+                      {bucket.count > 0 ? bucket.count : ''}
+                    </span>
+                    <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
+                      <motion.div
+                        className="w-full rounded-t-md bg-gradient-to-t from-brown-400 to-brown-600"
+                        initial={{ height: 0 }}
+                        animate={{ height: `${heightPct}%` }}
+                        transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+                        style={{ minHeight: '4px' }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground capitalize">{monthLabel}</span>
+                  </div>
+                );
+              })}
+              {monthlyBuckets.length === 0 && (
+                <p className="text-sm text-muted-foreground m-auto">Nessun dato disponibile</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coverage card — lg:col-span-1 */}
+        <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-brown-600" />
+              Copertura commenti
+            </CardTitle>
+            <CardDescription>Giornate con almeno un commento</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-5xl font-bold text-brown-900 text-center py-2">
+              {coveragePercent}%
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full h-3 bg-brown-100 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-brown-400 to-brown-600 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${coveragePercent}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              />
+            </div>
+
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <p>
+                <span className="font-medium text-brown-800">{commentedCount}</span>{' '}
+                di{' '}
+                <span className="font-medium text-brown-800">{gospelDailyCount}</span>{' '}
+                giornate commentate
+              </p>
+              <p>
+                media{' '}
+                <span className="font-medium text-brown-700">{avgComments}</span>{' '}
+                commenti/giornata
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </motion.div>
   );
 }
