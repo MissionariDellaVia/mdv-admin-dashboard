@@ -269,7 +269,7 @@ export function Dashboard() {
             <CardDescription>Frequenza di pubblicazione mensile</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end justify-between gap-2 h-40 pt-2">
+            <div className="flex items-end justify-between gap-3 h-64 pt-2">
               {monthlyBuckets.map((bucket) => {
                 const heightPct = Math.max(4, Math.round((bucket.count / maxCount) * 100));
                 const monthLabel = new Date(bucket.month + '-01').toLocaleDateString('it-IT', { month: 'short' });
@@ -278,7 +278,7 @@ export function Dashboard() {
                     <span className="text-xs font-semibold text-brown-700 leading-none">
                       {bucket.count > 0 ? bucket.count : ''}
                     </span>
-                    <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
+                    <div className="w-full flex-1 flex items-end justify-center min-h-0">
                       <motion.div
                         className="w-full rounded-t-md bg-gradient-to-t from-brown-400 to-brown-600"
                         initial={{ height: 0 }}
