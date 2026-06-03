@@ -4,6 +4,7 @@ import { locationsApi, eventsApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Plus, Pencil, Trash2, MapPin, Sparkles } from 'lucide-react';
 import type { Location } from '@/lib/types';
 
@@ -52,7 +53,13 @@ export function LocationList() {
     }
   };
 
+  const { isAdmin, allowedSlugs } = useAuth();
+
   const groups = groupBySlug(rows);
+
+  const visibleEntries = Array.from(groups.entries()).filter(
+    ([slug]) => isAdmin || allowedSlugs.includes(slug),
+  );
 
   return (
     <div className="space-y-6">
@@ -61,14 +68,16 @@ export function LocationList() {
           <h1 className="text-3xl font-bold text-brown-900">Luoghi</h1>
           <p className="text-muted-foreground mt-1">Santuari, attività e info ricorrenti</p>
         </div>
-        <Button onClick={() => navigate('/locations/new')} className="bg-brown-600 hover:bg-brown-700">
-          <Plus className="mr-2 h-4 w-4" /> Nuovo Luogo
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => navigate('/locations/new')} className="bg-brown-600 hover:bg-brown-700">
+            <Plus className="mr-2 h-4 w-4" /> Nuovo Luogo
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
         <p className="text-muted-foreground">Caricamento...</p>
-      ) : groups.size === 0 ? (
+      ) : visibleEntries.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
             Nessun luogo trovato.
@@ -76,7 +85,7 @@ export function LocationList() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {Array.from(groups.entries()).map(([slug, group]) => {
+          {visibleEntries.map(([slug, group]) => {
             // Use the Italian row name if available, otherwise the first one.
             const display = group.find((r) => r.lang === 'it') ?? group[0];
             const activityCount = eventCounts[slug] ?? 0;
@@ -109,14 +118,16 @@ export function LocationList() {
                     <Button variant="ghost" size="icon" onClick={() => navigate(`/locations/${slug}`)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={del.isPending}
-                      onClick={() => handleDelete(slug, group)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={del.isPending}
+                        onClick={() => handleDelete(slug, group)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
