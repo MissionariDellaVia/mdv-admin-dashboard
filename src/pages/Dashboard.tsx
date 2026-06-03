@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { gospelDailyApi, gospelsApi, seedsApi } from '@/lib/api';
+import { gospelDailyApi, gospelsApi, seedsApi, locationsApi, eventsApi, collaboratorsApi } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,9 @@ import {
   ArrowRight,
   Sparkles,
   Clock,
-  MessageSquare
+  MessageSquare,
+  MapPin,
+  Users
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -51,6 +53,23 @@ export function Dashboard() {
     queryFn: gospelDailyApi.getTotalCommentsCount,
   });
 
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => locationsApi.getAll('it'),
+  });
+
+  const { data: eventCounts = {} } = useQuery({
+    queryKey: ['event-counts'],
+    queryFn: () => eventsApi.getCountsBySlug(),
+  });
+
+  const { data: collaborators = [] } = useQuery({
+    queryKey: ['collaborators'],
+    queryFn: () => collaboratorsApi.list(),
+  });
+
+  const attivitaCount = Object.values(eventCounts).reduce((sum, n) => sum + n, 0);
+
   // Solo i dati recenti per la lista (limit 5)
   const { data: recentDailies = [], isLoading: loadingDaily } = useQuery({
     queryKey: ['gospel-daily-recent'],
@@ -81,7 +100,7 @@ export function Dashboard() {
       </motion.div>
 
       {/* Stats Grid */}
-      <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-brown-500">
           <div className="absolute inset-0 bg-gradient-to-br from-brown-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -140,6 +159,38 @@ export function Dashboard() {
             <div className="text-3xl font-bold text-brown-900">{totalComments}</div>
             <p className="text-xs text-muted-foreground mt-2">
               Commenti e riflessioni scritte
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-amber-500">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Luoghi</CardTitle>
+            <div className="p-2 rounded-lg bg-amber-100 text-amber-600 group-hover:scale-110 transition-transform">
+              <MapPin className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-brown-900">{locations.length}</div>
+            <p className="text-xs text-muted-foreground mt-2">
+              <span className="text-amber-600 font-medium">{attivitaCount}</span> attività e volantini
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-l-4 border-l-teal-500">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Collaboratori</CardTitle>
+            <div className="p-2 rounded-lg bg-teal-100 text-teal-600 group-hover:scale-110 transition-transform">
+              <Users className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-brown-900">{collaborators.length}</div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Gestiscono i luoghi assegnati
             </p>
           </CardContent>
         </Card>
@@ -270,6 +321,19 @@ export function Dashboard() {
                 </div>
               </Link>
 
+              <Link
+                to="/collaboratori"
+                className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-teal-300 hover:bg-teal-50/50 transition-all group"
+              >
+                <div className="p-2 rounded-lg bg-teal-100 text-teal-600 group-hover:bg-teal-200 transition-colors">
+                  <Users className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-medium text-brown-900">Invita collaboratore</p>
+                  <p className="text-xs text-muted-foreground">Assegna luoghi a un aiutante</p>
+                </div>
+              </Link>
+
               <div className="pt-4 border-t mt-4">
                 <p className="text-xs text-muted-foreground mb-3">Vai alle sezioni</p>
                 <div className="flex flex-wrap gap-2">
@@ -281,6 +345,12 @@ export function Dashboard() {
                   </Button>
                   <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
                     <Link to="/seeds">Semini</Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
+                    <Link to="/locations">Luoghi</Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="hover:bg-brown-50">
+                    <Link to="/collaboratori">Collaboratori</Link>
                   </Button>
                 </div>
               </div>
