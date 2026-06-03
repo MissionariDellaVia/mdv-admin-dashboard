@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Mail, LockKeyhole, LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AuthLayout } from '@/components/auth/AuthLayout';
+import { AuthField } from '@/components/auth/AuthField';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -19,73 +19,49 @@ export function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       await signIn(email, password);
       navigate('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Errore durante il login';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'Errore durante il login');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-mdv-medium">
-      <Card className="w-full max-w-md shadow-xl border-mdv-dark bg-mdv-cream/95">
-        <CardHeader className="text-center py-8">
-          <div className="mx-auto">
-            <img
-              src="/logo.png"
-              alt="MdV Logo"
-              className="w-32 h-32 object-contain mx-auto drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]"
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+    <AuthLayout title="Bentornato" subtitle="Accedi all'area di gestione dei contenuti">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-mdv-dark">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nome@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="border-mdv-light focus:border-mdv-medium focus:ring-mdv-medium"
-              />
-            </div>
+        <AuthField
+          id="email" label="Email" icon={Mail} type="email"
+          value={email} onChange={setEmail}
+          placeholder="nome@example.com" autoComplete="email"
+        />
+        <AuthField
+          id="password" label="Password" icon={LockKeyhole} type="password"
+          value={password} onChange={setPassword}
+          autoComplete="current-password"
+        />
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-mdv-dark">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-mdv-light focus:border-mdv-medium focus:ring-mdv-medium"
-              />
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full bg-mdv-medium hover:bg-mdv-dark text-mdv-cream" 
-              disabled={loading}
-            >
-              {loading ? 'Accesso in corso...' : 'Accedi'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="mt-2 h-11 w-full bg-mdv-medium text-base font-medium text-mdv-cream shadow-lg
+                     shadow-brown-900/25 transition-all hover:-translate-y-0.5 hover:bg-mdv-dark"
+        >
+          {loading ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Accesso in corso...</>
+          ) : (
+            <><LogIn className="mr-2 h-4 w-4" />Accedi</>
+          )}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

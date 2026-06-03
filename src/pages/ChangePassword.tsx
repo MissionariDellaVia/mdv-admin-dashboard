@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LockKeyhole, ShieldCheck, Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { profilesApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AuthLayout } from '@/components/auth/AuthLayout';
+import { AuthField } from '@/components/auth/AuthField';
 
 export function ChangePassword() {
   const [password, setPassword] = useState('');
@@ -17,10 +17,14 @@ export function ChangePassword() {
   const { refreshProfile } = useAuth();
   const navigate = useNavigate();
 
+  const longEnough = password.length >= 8;
+  const matches = confirm.length > 0 && password === confirm;
+  const canSubmit = longEnough && matches && !loading;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password.length < 8) { setError('La password deve avere almeno 8 caratteri'); return; }
+    if (!longEnough) { setError('La password deve avere almeno 8 caratteri'); return; }
     if (password !== confirm) { setError('Le password non coincidono'); return; }
     setLoading(true);
     try {
@@ -37,36 +41,56 @@ export function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-mdv-medium">
-      <Card className="w-full max-w-md shadow-xl bg-mdv-cream/95">
-        <CardHeader className="text-center py-6">
-          <h1 className="text-xl font-bold text-mdv-dark">Imposta una nuova password</h1>
-          <p className="text-sm text-mdv-dark/70 mt-1">
-            Per sicurezza, scegli una password personale prima di continuare.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-mdv-dark">Nuova password</Label>
-              <Input id="password" type="password" value={password}
-                onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm" className="text-mdv-dark">Conferma password</Label>
-              <Input id="confirm" type="password" value={confirm}
-                onChange={(e) => setConfirm(e.target.value)} required />
-            </div>
-            <Button type="submit" className="w-full bg-mdv-medium hover:bg-mdv-dark text-mdv-cream"
-              disabled={loading}>
-              {loading ? 'Salvataggio...' : 'Salva e continua'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Imposta la password"
+      eyebrow="Primo accesso"
+      subtitle="Per sicurezza, scegli una password personale prima di continuare."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <AuthField
+          id="password" label="Nuova password" icon={LockKeyhole} type="password"
+          value={password} onChange={setPassword} autoComplete="new-password"
+        />
+        <AuthField
+          id="confirm" label="Conferma password" icon={ShieldCheck} type="password"
+          value={confirm} onChange={setConfirm} autoComplete="new-password"
+        />
+
+        {/* Indizi di validazione, discreti */}
+        <ul className="space-y-1 text-xs">
+          <Hint ok={longEnough}>Almeno 8 caratteri</Hint>
+          <Hint ok={matches}>Le due password coincidono</Hint>
+        </ul>
+
+        <Button
+          type="submit"
+          disabled={!canSubmit}
+          className="mt-1 h-11 w-full bg-mdv-medium text-base font-medium text-mdv-cream shadow-lg
+                     shadow-brown-900/25 transition-all hover:-translate-y-0.5 hover:bg-mdv-dark
+                     disabled:translate-y-0 disabled:opacity-60"
+        >
+          {loading ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvataggio...</>
+          ) : (
+            'Salva e continua'
+          )}
+        </Button>
+      </form>
+    </AuthLayout>
+  );
+}
+
+function Hint({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  return (
+    <li className={`flex items-center gap-1.5 transition-colors ${ok ? 'text-green-700' : 'text-brown-400'}`}>
+      <Check className={`h-3.5 w-3.5 ${ok ? 'opacity-100' : 'opacity-40'}`} />
+      {children}
+    </li>
   );
 }

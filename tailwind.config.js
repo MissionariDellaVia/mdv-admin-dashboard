@@ -16,6 +16,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Barlow Semi Condensed"', 'sans-serif'],
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
       },
       colors: {
         mdv: {
