@@ -7,8 +7,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, MapPin, Sparkles } from 'lucide-react';
 import type { Location } from '@/lib/types';
 
-const ALL_LANGS = ['it', 'en', 'es', 'fr', 'pl', 'pt'];
-
 /** Group a flat list of Location rows (one per lang) into a map keyed by slug. */
 function groupBySlug(rows: Location[]): Map<string, Location[]> {
   const map = new Map<string, Location[]>();
@@ -81,7 +79,6 @@ export function LocationList() {
           {Array.from(groups.entries()).map(([slug, group]) => {
             // Use the Italian row name if available, otherwise the first one.
             const display = group.find((r) => r.lang === 'it') ?? group[0];
-            const presentLangs = new Set(group.map((r) => r.lang));
             const activityCount = eventCounts[slug] ?? 0;
 
             return (
@@ -103,23 +100,9 @@ export function LocationList() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mb-1">
+                      <p className="text-xs text-muted-foreground">
                         {slug}{display.is_published ? '' : ' · bozza'}
                       </p>
-                      <div className="flex gap-1">
-                        {ALL_LANGS.map((l) => (
-                          <span
-                            key={l}
-                            className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
-                              presentLangs.has(l)
-                                ? 'bg-brown-600 text-white border-brown-600'
-                                : 'text-muted-foreground border-muted-foreground/30'
-                            }`}
-                          >
-                            {l}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
