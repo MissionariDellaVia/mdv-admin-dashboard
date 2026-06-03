@@ -116,17 +116,18 @@ export function LocationList() {
                     </div>
                   </div>
                   <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/locations/${slug}`)}>
+                    <Button variant="ghost" size="icon" className="hover:bg-brown-100" onClick={() => navigate(`/locations/${slug}`)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     {isAdmin && (
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="text-destructive hover:bg-red-50"
                         disabled={del.isPending}
                         onClick={() => handleDelete(slug, group)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
