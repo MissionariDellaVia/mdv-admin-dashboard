@@ -82,7 +82,7 @@ export function GospelCreate() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-brown-900">{isEdit ? 'Modifica' : 'Nuovo'} Vangelo</h1>
+          <h1 className="text-3xl font-bold text-mdv-darkest">{isEdit ? 'Modifica' : 'Nuovo'} Vangelo</h1>
           <p className="text-muted-foreground mt-1">{isEdit ? 'Modifica il testo' : 'Aggiungi un nuovo testo'}</p>
         </div>
       </div>

@@ -109,7 +109,7 @@ export function Dashboard() {
       {/* Header */}
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-brown-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-mdv-darkest">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
             Panoramica dei contenuti Via del Vangelo
           </p>

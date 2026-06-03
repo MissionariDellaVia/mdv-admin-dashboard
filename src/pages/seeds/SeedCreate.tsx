@@ -67,7 +67,7 @@ export function SeedCreate() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/seeds')}><ArrowLeft className="h-5 w-5" /></Button>
         <div>
-          <h1 className="text-3xl font-bold text-brown-900">{isEdit ? 'Modifica' : 'Nuovo'} Semino</h1>
+          <h1 className="text-3xl font-bold text-mdv-darkest">{isEdit ? 'Modifica' : 'Nuovo'} Semino</h1>
           <p className="text-muted-foreground mt-1">{isEdit ? 'Modifica il versetto' : 'Aggiungi un nuovo versetto'}</p>
         </div>
       </div>

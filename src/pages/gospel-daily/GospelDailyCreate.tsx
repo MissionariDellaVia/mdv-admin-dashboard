@@ -117,7 +117,7 @@ export function GospelDailyCreate() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-brown-900">Nuova Via del Vangelo</h1>
+          <h1 className="text-3xl font-bold text-mdv-darkest">Nuova Via del Vangelo</h1>
           <p className="text-muted-foreground mt-1">Crea un nuovo contenuto giornaliero</p>
         </div>
       </div>

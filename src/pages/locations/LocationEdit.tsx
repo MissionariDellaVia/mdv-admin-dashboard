@@ -241,7 +241,7 @@ export function LocationEdit() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-brown-900">{pageTitle}</h1>
+          <h1 className="text-2xl font-bold text-mdv-darkest">{pageTitle}</h1>
           {isEdit && <p className="text-sm text-muted-foreground">{slugParam}</p>}
         </div>
       </div>
