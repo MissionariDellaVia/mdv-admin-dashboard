@@ -29,6 +29,15 @@ export function Header() {
       ? 'Collaboratore'
       : null;
   const RoleIcon = isAdmin ? ShieldCheck : Users;
+  // Display name da Supabase (Authentication → Users → Display name / user_metadata),
+  // con fallback all'email se non impostato.
+  const displayName =
+    (user?.user_metadata?.display_name as string | undefined) ||
+    (user?.user_metadata?.full_name as string | undefined) ||
+    (user?.user_metadata?.name as string | undefined) ||
+    user?.email ||
+    '';
+  const hasDisplayName = !!displayName && displayName !== user?.email;
 
   return (
     <>
@@ -56,7 +65,7 @@ export function Header() {
                 <User className="w-4 h-4" />
               </div>
               <span className="hidden sm:inline text-sm text-brown-900 max-w-[200px] truncate">
-                {user?.email}
+                {displayName}
               </span>
               <ChevronDown className="hidden sm:inline h-4 w-4 text-muted-foreground" />
             </Button>
@@ -68,7 +77,10 @@ export function Header() {
                 <User className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-brown-900 truncate">{user?.email}</p>
+                <p className="text-sm font-medium text-brown-900 truncate">{displayName}</p>
+                {hasDisplayName && (
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                )}
                 {roleLabel && (
                   <span
                     className={`inline-flex items-center gap-1 mt-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${

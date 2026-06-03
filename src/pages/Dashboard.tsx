@@ -111,7 +111,7 @@ export function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold text-mdv-darkest">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
-            Panoramica dei contenuti Via del Vangelo
+            Panoramica dei contenuti
           </p>
         </div>
         <Button asChild className="bg-brown-600 hover:bg-brown-700 shadow-sm hover:shadow-md transition-all">
