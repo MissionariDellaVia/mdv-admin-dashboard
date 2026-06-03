@@ -60,15 +60,24 @@ serve(async (req) => {
     }
     const newId = created.user.id;
 
-    // 5. Profilo collaboratore + assegnazioni luoghi.
-    await admin.from("profiles").upsert(
+    // 5. Profilo collaboratore + assegnazioni luoghi. Se una scrittura fallisce,
+    // elimina l'utente appena creato (niente auth user orfani) e segnala errore.
+    const { error: profErr } = await admin.from("profiles").upsert(
       { id: newId, role: "collaborator", email, must_change_password: true },
       { onConflict: "id" },
     );
-    await admin.from("location_editors").upsert(
+    if (profErr) {
+      await admin.auth.admin.deleteUser(newId);
+      return json({ error: profErr.message }, 500);
+    }
+    const { error: linkErr } = await admin.from("location_editors").upsert(
       slugs.map((s) => ({ user_id: newId, location_slug: s })),
       { onConflict: "user_id,location_slug" },
     );
+    if (linkErr) {
+      await admin.auth.admin.deleteUser(newId);
+      return json({ error: linkErr.message }, 500);
+    }
 
     return json({ id: newId, email, tempPassword: password });
   } catch (err) {
