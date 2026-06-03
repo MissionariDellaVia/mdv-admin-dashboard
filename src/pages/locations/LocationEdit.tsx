@@ -14,14 +14,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RichTextEditor } from '@/components/editors/RichTextEditor';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, Globe, Upload, X, Copy } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import type { Location, LocationEmail } from '@/lib/types';
 import { EmailsRepeater } from './components/EmailsRepeater';
 import { EventsTab } from './components/EventsTab';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ALL_LANGS = ['it', 'en', 'es', 'fr', 'pl', 'pt'] as const;
+// Le location si gestiscono solo in italiano: le altre lingue sono tradotte
+// automaticamente dall'edge function. Vedi docs/superpowers/specs.
+const LANG = 'it';
 
 // Stable empty reference: avoids React #185 (infinite render loop) when the query
 // is disabled (new mode → data undefined) and a fresh `[]` would change each render.
@@ -54,26 +56,21 @@ export function LocationEdit() {
   const queryClient = useQueryClient();
 
   const isEdit = !!slugParam;
-  const [selectedLang, setSelectedLang] = useState<string>('it');
   const [emails, setEmails] = useState<LocationEmail[]>([]);
   const [infoBody, setInfoBody] = useState('');
   const [infoImages, setInfoImages] = useState<string[]>([]);
-  const [copySource, setCopySource] = useState('');
   const [uploadingInfo, setUploadingInfo] = useState(false);
   // Tracks unsaved edits in the non-RHF controlled bits (emails / info body / info images).
   const [extraDirty, setExtraDirty] = useState(false);
 
-  // ── Fetch all language rows for this slug (edit mode) ──────────────────────
+  // ── Fetch the location rows for this slug (edit mode) ──────────────────────
   const { data, isLoading } = useQuery({
     queryKey: ['location', slugParam],
     queryFn: () => locationsApi.getBySlug(slugParam!),
     enabled: isEdit,
   });
   const locationRows = data ?? EMPTY_ROWS;
-
-  // Build a map lang → Location row.
-  const langMap = new Map(locationRows.map((r) => [r.lang, r]));
-  const presentLangs = new Set(langMap.keys());
+  const itRow = locationRows.find((r) => r.lang === LANG);
 
   // ── Form (react-hook-form + zod for tab-1 fields) ─────────────────────────
   const {
@@ -92,26 +89,25 @@ export function LocationEdit() {
   const slugValue = watch('slug');
   const dirty = isDirty || extraDirty;
 
-  // ── Populate form when selectedLang or locationRows changes ───────────────
+  // ── Populate form from the IT row ──────────────────────────────────────────
   useEffect(() => {
-    const row = langMap.get(selectedLang);
-    if (row) {
+    if (itRow) {
       reset({
-        name: row.name,
-        slug: row.slug,
-        city: row.city ?? '',
-        address: row.address ?? '',
-        latitude: row.latitude ?? null,
-        longitude: row.longitude ?? null,
-        phone: row.phone ?? '',
-        intro: row.intro ?? '',
-        is_published: row.is_published,
+        name: itRow.name,
+        slug: itRow.slug,
+        city: itRow.city ?? '',
+        address: itRow.address ?? '',
+        latitude: itRow.latitude ?? null,
+        longitude: itRow.longitude ?? null,
+        phone: itRow.phone ?? '',
+        intro: itRow.intro ?? '',
+        is_published: itRow.is_published,
       });
-      setEmails(Array.isArray(row.emails) ? row.emails : []);
-      setInfoBody(row.location_info?.[0]?.body ?? '');
-      setInfoImages(row.location_info?.[0]?.images ?? []);
+      setEmails(Array.isArray(itRow.emails) ? itRow.emails : []);
+      setInfoBody(itRow.location_info?.[0]?.body ?? '');
+      setInfoImages(itRow.location_info?.[0]?.images ?? []);
     } else if (isEdit) {
-      // Language not yet created: keep slug fixed, blank the rest.
+      // Slug exists but has no IT row yet (legacy): keep slug, blank the rest.
       reset({
         name: '',
         slug: locationRows[0]?.slug ?? '',
@@ -127,7 +123,6 @@ export function LocationEdit() {
       setInfoBody('');
       setInfoImages([]);
     } else {
-      // New mode.
       reset({ is_published: true });
       setEmails([]);
       setInfoBody('');
@@ -135,44 +130,13 @@ export function LocationEdit() {
     }
     setExtraDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedLang, locationRows]);
+  }, [locationRows]);
 
   // ── Unsaved-changes guard ──────────────────────────────────────────────────
-  const confirmIfDirty = () =>
-    !dirty || window.confirm('Hai modifiche non salvate in questa lingua. Continuare e perderle?');
-
-  const switchLang = (l: string) => {
-    if (l === selectedLang) return;
-    if (confirmIfDirty()) setSelectedLang(l);
-  };
-
   const goToList = () => {
-    if (confirmIfDirty()) navigate('/locations');
-  };
-
-  // ── Copy all fields from another language (base for translation) ───────────
-  const sourceLangs = Array.from(presentLangs);
-  const effectiveSource = copySource || sourceLangs[0];
-
-  const handleCopyFrom = () => {
-    const src = langMap.get(effectiveSource);
-    if (!src) return;
-    setValue('name', src.name, { shouldDirty: true });
-    setValue('city', src.city ?? '', { shouldDirty: true });
-    setValue('address', src.address ?? '', { shouldDirty: true });
-    setValue('latitude', src.latitude ?? null, { shouldDirty: true });
-    setValue('longitude', src.longitude ?? null, { shouldDirty: true });
-    setValue('phone', src.phone ?? '', { shouldDirty: true });
-    setValue('intro', src.intro ?? '', { shouldDirty: true });
-    setValue('is_published', src.is_published, { shouldDirty: true });
-    setEmails(Array.isArray(src.emails) ? src.emails : []);
-    setInfoBody(src.location_info?.[0]?.body ?? '');
-    setInfoImages(src.location_info?.[0]?.images ?? []);
-    setExtraDirty(true);
-    toast({
-      title: 'Dati copiati',
-      description: `Copiati da "${effectiveSource.toUpperCase()}". Traduci i testi e salva.`,
-    });
+    if (!dirty || window.confirm('Hai modifiche non salvate. Uscire e perderle?')) {
+      navigate('/locations');
+    }
   };
 
   // ── Info images upload ──────────────────────────────────────────────────────
@@ -186,8 +150,8 @@ export function LocationEdit() {
     }
     setUploadingInfo(true);
     try {
-      const url = await locationsApi.uploadImage(file, slugValue);
-      setInfoImages((prev) => [...prev, url]);
+      const uploadedUrl = await locationsApi.uploadImage(file, slugValue);
+      setInfoImages((prev) => [...prev, uploadedUrl]);
       setExtraDirty(true);
     } catch (err) {
       toast({ title: 'Errore', description: (err as Error).message, variant: 'destructive' });
@@ -204,11 +168,10 @@ export function LocationEdit() {
   // ── Save mutation ─────────────────────────────────────────────────────────
   const save = useMutation({
     mutationFn: async (formData: FormData) => {
-      const exists = langMap.get(selectedLang);
       const payload = {
         name: formData.name,
         slug: formData.slug,
-        lang: selectedLang,
+        lang: LANG,
         city: formData.city ?? null,
         address: formData.address ?? null,
         latitude: formData.latitude ?? null,
@@ -218,12 +181,12 @@ export function LocationEdit() {
         is_published: formData.is_published ?? true,
         emails,
       };
-      const loc = exists
-        ? await locationsApi.update(exists.id, payload)
+      const loc = itRow
+        ? await locationsApi.update(itRow.id, payload)
         : await locationsApi.create(payload);
 
       // Save the single "info statica" row (body + images).
-      const existingInfo = exists?.location_info?.[0];
+      const existingInfo = itRow?.location_info?.[0];
       if (existingInfo) {
         await locationInfoApi.update(existingInfo.id, { body: infoBody, images: infoImages });
       } else {
@@ -235,21 +198,14 @@ export function LocationEdit() {
       setExtraDirty(false);
       queryClient.invalidateQueries({ queryKey: ['locations'] });
       queryClient.invalidateQueries({ queryKey: ['location', loc.slug] });
-      toast({ title: 'Salvato', description: `Lingua "${selectedLang}" salvata` });
-      if (!isEdit) {
-        // New mode: navigate to the edit page so the user can add more languages/events.
-        navigate('/locations/' + loc.slug);
-      }
-      // Edit mode: stay on page — user switches language to fill other translations.
+      toast({ title: 'Salvato' });
+      if (!isEdit) navigate('/locations/' + loc.slug);
     },
     onError: (e: Error) =>
       toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
   });
 
-  // ── Display title ─────────────────────────────────────────────────────────
-  const pageTitle = isEdit
-    ? (langMap.get(selectedLang)?.name ?? slugParam ?? 'Modifica Luogo')
-    : 'Nuovo Luogo';
+  const pageTitle = isEdit ? (itRow?.name ?? slugParam ?? 'Modifica Luogo') : 'Nuovo Luogo';
 
   if (isEdit && isLoading) {
     return (
@@ -272,82 +228,11 @@ export function LocationEdit() {
         </div>
       </div>
 
-      {/* ── Language selector ── */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-1.5">
-          <Globe className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-muted-foreground">Lingua</span>
-        </div>
-        {isEdit ? (
-          <>
-            <div className="flex gap-2 flex-wrap">
-              {ALL_LANGS.map((l) => {
-                const exists = presentLangs.has(l);
-                const active = l === selectedLang;
-                return (
-                  <Button
-                    key={l}
-                    type="button"
-                    size="sm"
-                    variant={active ? 'default' : 'outline'}
-                    className={
-                      active
-                        ? 'bg-brown-600 hover:bg-brown-700 text-white'
-                        : exists
-                        ? 'border-brown-400 text-brown-700'
-                        : 'text-muted-foreground'
-                    }
-                    onClick={() => switchLang(l)}
-                  >
-                    {l.toUpperCase()}
-                    {exists && !active && (
-                      <span className="ml-1 h-1.5 w-1.5 rounded-full bg-brown-500 inline-block" />
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-            {!presentLangs.has(selectedLang) && (
-              <div className="mt-1 space-y-2">
-                <p className="text-xs text-amber-600">
-                  Questa lingua non esiste ancora — verrà creata al salvataggio.
-                </p>
-                {sourceLangs.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Copia dati da</span>
-                    <select
-                      value={effectiveSource}
-                      onChange={(e) => setCopySource(e.target.value)}
-                      className="h-8 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      {sourceLangs.map((l) => (
-                        <option key={l} value={l}>
-                          {l.toUpperCase()}
-                        </option>
-                      ))}
-                    </select>
-                    <Button type="button" size="sm" variant="outline" onClick={handleCopyFrom}>
-                      <Copy className="mr-1 h-3.5 w-3.5" /> Copia
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        ) : (
-          <select
-            value={selectedLang}
-            onChange={(e) => setSelectedLang(e.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {ALL_LANGS.map((l) => (
-              <option key={l} value={l}>
-                {l.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      {/* Le altre lingue sono tradotte automaticamente: qui si compila solo l'italiano. */}
+      <p className="text-xs text-muted-foreground">
+        Compila i contenuti in <strong>italiano</strong>. Le altre lingue vengono tradotte
+        automaticamente quando l'app pubblica le richiede.
+      </p>
 
       {/* ── Tabs + form ── */}
       <form onSubmit={handleSubmit((d) => save.mutate(d))}>
@@ -550,7 +435,7 @@ export function LocationEdit() {
             <Card>
               <CardContent className="pt-6">
                 {isEdit ? (
-                  <EventsTab slug={slugParam!} lang={selectedLang} />
+                  <EventsTab slug={slugParam!} lang={LANG} />
                 ) : (
                   <div className="space-y-3 text-sm">
                     <div className="flex gap-3 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
@@ -561,7 +446,7 @@ export function LocationEdit() {
                         </p>
                         <p>
                           <span className="font-semibold text-green-700">Eventi testuali</span> —
-                          testo descrittivo, specifici per lingua.
+                          testo descrittivo (tradotto automaticamente nelle altre lingue).
                         </p>
                       </div>
                     </div>
@@ -584,7 +469,7 @@ export function LocationEdit() {
             className="bg-brown-600 hover:bg-brown-700"
           >
             <Save className="mr-2 h-4 w-4" />
-            {save.isPending ? 'Salvataggio...' : `Salva "${selectedLang.toUpperCase()}"`}
+            {save.isPending ? 'Salvataggio...' : 'Salva'}
           </Button>
           <Button type="button" variant="outline" onClick={goToList}>
             Torna alla lista

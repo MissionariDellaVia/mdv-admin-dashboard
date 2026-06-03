@@ -19,7 +19,11 @@ export function imageUrlValue(images: string[] | null | undefined): string | str
   return images.length === 1 ? images[0] : images;
 }
 
-export function shapeLocations(rows: LocationRow[], events: EventRow[] = []) {
+export function shapeLocations(
+  rows: LocationRow[],
+  events: EventRow[] = [],
+  headerTitle = 'Attività e missioni',
+) {
   const groups = (rows || []).map((loc) => {
     const slug = loc.slug;
     const locEvents = (events || []).filter((e) => e.location_slug === slug);
@@ -70,7 +74,7 @@ export function shapeLocations(rows: LocationRow[], events: EventRow[] = []) {
     };
   });
   return {
-    header: { title: groups.length ? 'Attività e missioni' : '' },
+    header: { title: groups.length ? headerTitle : '' },
     main: { caption: rows && rows[0] ? (rows[0].intro || '') : '' },
     groups,
   };
