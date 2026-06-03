@@ -310,7 +310,7 @@ export function GospelDailyCreate() {
           <Button
             type="submit"
             disabled={createMutation.isPending}
-            className="bg-brown-600 hover:bg-brown-700 shadow-sm hover:shadow-md transition-all"
+            className="bg-gold-500 hover:bg-gold-400 text-white shadow-sm hover:shadow-md transition-all"
           >
             {createMutation.isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvataggio...</>

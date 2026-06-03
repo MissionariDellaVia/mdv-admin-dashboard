@@ -73,9 +73,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   to={item.href}
                   className={({ isActive }) => cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isActive 
-                      ? "bg-mdv-medium text-mdv-cream" 
-                      : "text-mdv-cream/70 hover:bg-mdv-medium hover:text-mdv-cream"
+                    isActive
+                      ? "bg-gold-500 text-white"
+                      : "text-mdv-cream/70 hover:bg-mdv-medium/60 hover:text-white"
                   )}
                   onClick={onClose}
                 >
@@ -89,7 +89,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-mdv-darkest">
-          <p className="text-xs text-mdv-gray text-center">
+          <p className="text-xs text-gold-300/70 text-center">
             MdV Dashboard v{__APP_VERSION__}
           </p>
         </div>

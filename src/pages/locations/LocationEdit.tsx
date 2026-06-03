@@ -509,7 +509,7 @@ export function LocationEdit() {
           <Button
             type="submit"
             disabled={save.isPending}
-            className="bg-brown-600 hover:bg-brown-700"
+            className="bg-gold-500 hover:bg-gold-400 text-white"
           >
             <Save className="mr-2 h-4 w-4" />
             {save.isPending ? 'Salvataggio...' : 'Salva'}

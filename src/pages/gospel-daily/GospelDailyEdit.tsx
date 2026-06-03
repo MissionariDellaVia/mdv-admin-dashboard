@@ -424,7 +424,7 @@ export function GospelDailyEdit() {
           <Button
             type="submit"
             disabled={updateMutation.isPending}
-            className="bg-brown-600 hover:bg-brown-700 shadow-sm hover:shadow-md transition-all"
+            className="bg-gold-500 hover:bg-gold-400 text-white shadow-sm hover:shadow-md transition-all"
           >
             {updateMutation.isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvataggio...</>

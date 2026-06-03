@@ -69,7 +69,7 @@ export function LocationList() {
           <p className="text-muted-foreground mt-1">Santuari, attività e info ricorrenti</p>
         </div>
         {isAdmin && (
-          <Button onClick={() => navigate('/locations/new')} className="bg-brown-600 hover:bg-brown-700">
+          <Button onClick={() => navigate('/locations/new')} className="bg-gold-500 hover:bg-gold-400 text-white">
             <Plus className="mr-2 h-4 w-4" /> Nuovo Luogo
           </Button>
         )}

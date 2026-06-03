@@ -139,7 +139,7 @@ export function EventForm({
           size="sm"
           disabled={saving}
           onClick={handleSave}
-          className="bg-brown-600 hover:bg-brown-700"
+          className="bg-gold-500 hover:bg-gold-400 text-white"
         >
           {saving ? 'Salvando...' : 'Salva'}
         </Button>
