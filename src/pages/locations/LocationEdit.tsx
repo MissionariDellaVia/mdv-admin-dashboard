@@ -234,7 +234,12 @@ export function LocationEdit() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="max-w-3xl mx-auto space-y-6"
+    >
       {/* ── Header ── */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={goToList}>
@@ -519,6 +524,6 @@ export function LocationEdit() {
           </Button>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }

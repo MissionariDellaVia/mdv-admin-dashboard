@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { motion } from 'framer-motion';
 import { gospelsApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,7 +77,12 @@ export function GospelCreate() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/gospels')} className="hover:bg-brown-100 transition-colors">
           <ArrowLeft className="h-5 w-5" />
@@ -87,54 +93,65 @@ export function GospelCreate() {
         </div>
       </div>
       <form onSubmit={handleSubmit(data => mutation.mutate(data))} className="space-y-6 max-w-3xl mx-auto">
-        <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
-          <CardHeader><CardTitle>Informazioni Vangelo</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reference">Riferimento *</Label>
-              <Input
-                id="reference"
-                {...register('reference')}
-                placeholder="Es. Mt 5,1-12"
-                className={`transition-all duration-200 ${errors.reference ? 'border-red-500 focus:ring-red-500' : 'focus:ring-brown-500'}`}
-              />
-              {errors.reference && <p className="text-red-500 text-sm">{errors.reference.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Evangelista *</Label>
-              <Controller
-                name="evangelist"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className={`transition-all duration-200 ${errors.evangelist ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Seleziona evangelista" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Matteo">Matteo</SelectItem>
-                      <SelectItem value="Marco">Marco</SelectItem>
-                      <SelectItem value="Luca">Luca</SelectItem>
-                      <SelectItem value="Giovanni">Giovanni</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.evangelist && <p className="text-red-500 text-sm">{errors.evangelist.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="text">Testo *</Label>
-              <Textarea
-                id="text"
-                {...register('text')}
-                rows={12}
-                placeholder="Inserisci il testo del vangelo..."
-                className={`transition-all duration-200 resize-none ${errors.text ? 'border-red-500 focus:ring-red-500' : 'focus:ring-brown-500'}`}
-              />
-              {errors.text && <p className="text-red-500 text-sm">{errors.text.message}</p>}
-            </div>
-          </CardContent>
-        </Card>
-        <div className="flex justify-center gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardHeader><CardTitle>Informazioni Vangelo</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reference">Riferimento *</Label>
+                <Input
+                  id="reference"
+                  {...register('reference')}
+                  placeholder="Es. Mt 5,1-12"
+                  className={`transition-all duration-200 ${errors.reference ? 'border-red-500 focus:ring-red-500' : 'focus:ring-brown-500'}`}
+                />
+                {errors.reference && <p className="text-red-500 text-sm">{errors.reference.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label>Evangelista *</Label>
+                <Controller
+                  name="evangelist"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className={`transition-all duration-200 ${errors.evangelist ? 'border-red-500' : ''}`}>
+                        <SelectValue placeholder="Seleziona evangelista" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Matteo">Matteo</SelectItem>
+                        <SelectItem value="Marco">Marco</SelectItem>
+                        <SelectItem value="Luca">Luca</SelectItem>
+                        <SelectItem value="Giovanni">Giovanni</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.evangelist && <p className="text-red-500 text-sm">{errors.evangelist.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="text">Testo *</Label>
+                <Textarea
+                  id="text"
+                  {...register('text')}
+                  rows={12}
+                  placeholder="Inserisci il testo del vangelo..."
+                  className={`transition-all duration-200 resize-none ${errors.text ? 'border-red-500 focus:ring-red-500' : 'focus:ring-brown-500'}`}
+                />
+                {errors.text && <p className="text-red-500 text-sm">{errors.text.message}</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="flex justify-center gap-3"
+        >
           <Button type="submit" disabled={mutation.isPending} className="bg-brown-600 hover:bg-brown-700 transition-colors">
             {mutation.isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvataggio...</>
@@ -145,8 +162,8 @@ export function GospelCreate() {
           <Button type="button" variant="outline" onClick={() => navigate('/gospels')} className="hover:bg-brown-50 transition-colors">
             Annulla
           </Button>
-        </div>
+        </motion.div>
       </form>
-    </div>
+    </motion.div>
   );
 }
