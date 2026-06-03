@@ -7,9 +7,11 @@ import type { LocationEmail, ContactType } from '@/lib/types';
 export function EmailsRepeater({
   emails,
   onChange,
+  disabled = false,
 }: {
   emails: LocationEmail[];
   onChange: (v: LocationEmail[]) => void;
+  disabled?: boolean;
 }) {
   const add = () => onChange([...emails, { type: 'frate', email: '' }]);
   const remove = (i: number) => onChange(emails.filter((_, idx) => idx !== i));
@@ -23,7 +25,8 @@ export function EmailsRepeater({
           <select
             value={entry.type}
             onChange={(e) => update(i, { type: e.target.value as ContactType })}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            disabled={disabled}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="frate">Frate</option>
             <option value="suora">Suora</option>
@@ -33,14 +36,15 @@ export function EmailsRepeater({
             placeholder="email@example.com"
             value={entry.email}
             onChange={(e) => update(i, { email: e.target.value })}
+            disabled={disabled}
             className="flex-1"
           />
-          <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)}>
+          <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)} disabled={disabled}>
             <Trash2 className="h-4 w-4 text-red-500" />
           </Button>
         </div>
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={add}>
+      <Button type="button" variant="outline" size="sm" onClick={add} disabled={disabled}>
         <Plus className="mr-1 h-4 w-4" /> Aggiungi contatto
       </Button>
     </div>

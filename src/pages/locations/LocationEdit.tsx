@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
 import { locationsApi, locationInfoApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,6 +57,10 @@ export function LocationEdit() {
   const queryClient = useQueryClient();
 
   const isEdit = !!slugParam;
+
+  const { isAdmin, allowedSlugs, loading: authLoading } = useAuth();
+  const canEditAnagrafica = isAdmin; // i collaboratori vedono i Dati in sola lettura
+
   const [emails, setEmails] = useState<LocationEmail[]>([]);
   const [infoBody, setInfoBody] = useState('');
   const [infoImages, setInfoImages] = useState<string[]>([]);
@@ -132,6 +137,13 @@ export function LocationEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationRows]);
 
+  // ── Foreign-slug guard: collaborators can only access their allowed slugs ──
+  useEffect(() => {
+    if (!authLoading && !isAdmin && isEdit && slugParam && !allowedSlugs.includes(slugParam)) {
+      navigate('/locations');
+    }
+  }, [authLoading, isAdmin, allowedSlugs, isEdit, slugParam, navigate]);
+
   // ── Unsaved-changes guard ──────────────────────────────────────────────────
   const goToList = () => {
     if (!dirty || window.confirm('Hai modifiche non salvate. Uscire e perderle?')) {
@@ -168,22 +180,26 @@ export function LocationEdit() {
   // ── Save mutation ─────────────────────────────────────────────────────────
   const save = useMutation({
     mutationFn: async (formData: FormData) => {
-      const payload = {
-        name: formData.name,
-        slug: formData.slug,
-        lang: LANG,
-        city: formData.city ?? null,
-        address: formData.address ?? null,
-        latitude: formData.latitude ?? null,
-        longitude: formData.longitude ?? null,
-        phone: formData.phone ?? null,
-        intro: formData.intro ?? null,
-        is_published: formData.is_published ?? true,
-        emails,
-      };
-      const loc = itRow
-        ? await locationsApi.update(itRow.id, payload)
-        : await locationsApi.create(payload);
+      let loc = itRow;
+      if (canEditAnagrafica) {
+        const payload = {
+          name: formData.name,
+          slug: formData.slug,
+          lang: LANG,
+          city: formData.city ?? null,
+          address: formData.address ?? null,
+          latitude: formData.latitude ?? null,
+          longitude: formData.longitude ?? null,
+          phone: formData.phone ?? null,
+          intro: formData.intro ?? null,
+          is_published: formData.is_published ?? true,
+          emails,
+        };
+        loc = itRow
+          ? await locationsApi.update(itRow.id, payload)
+          : await locationsApi.create(payload);
+      }
+      if (!loc) throw new Error('Luogo non trovato');
 
       // Save the single "info statica" row (body + images).
       const existingInfo = itRow?.location_info?.[0];
@@ -254,6 +270,7 @@ export function LocationEdit() {
                     id="name"
                     {...register('name')}
                     placeholder="Es. Santuario Madonna della Catena"
+                    disabled={!canEditAnagrafica}
                   />
                   {errors.name && (
                     <p className="text-red-500 text-xs">{errors.name.message}</p>
@@ -269,8 +286,8 @@ export function LocationEdit() {
                       {...register('slug')}
                       placeholder="madonna-dc"
                       readOnly={isEdit}
-                      disabled={isEdit}
-                      className={isEdit ? 'bg-muted cursor-not-allowed' : ''}
+                      disabled={isEdit || !canEditAnagrafica}
+                      className={isEdit || !canEditAnagrafica ? 'bg-muted cursor-not-allowed' : ''}
                     />
                     {errors.slug && (
                       <p className="text-red-500 text-xs">{errors.slug.message}</p>
@@ -282,6 +299,7 @@ export function LocationEdit() {
                       id="city"
                       {...register('city')}
                       placeholder="Es. Cassano all'Ionio"
+                      disabled={!canEditAnagrafica}
                     />
                   </div>
                 </div>
@@ -294,6 +312,7 @@ export function LocationEdit() {
                     {...register('address')}
                     rows={2}
                     placeholder="Via Roma 1, 87011 Cassano all'Ionio (CS)"
+                    disabled={!canEditAnagrafica}
                   />
                 </div>
 
@@ -310,6 +329,7 @@ export function LocationEdit() {
                           v === '' || v === null || v === undefined ? null : Number(v),
                       })}
                       placeholder="39.7917"
+                      disabled={!canEditAnagrafica}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -323,6 +343,7 @@ export function LocationEdit() {
                           v === '' || v === null || v === undefined ? null : Number(v),
                       })}
                       placeholder="16.3221"
+                      disabled={!canEditAnagrafica}
                     />
                   </div>
                 </div>
@@ -330,7 +351,7 @@ export function LocationEdit() {
                 {/* Phone */}
                 <div className="space-y-1.5">
                   <Label htmlFor="phone">Telefono</Label>
-                  <Input id="phone" {...register('phone')} placeholder="+39 0983 123456" />
+                  <Input id="phone" {...register('phone')} placeholder="+39 0983 123456" disabled={!canEditAnagrafica} />
                 </div>
 
                 {/* Intro */}
@@ -341,6 +362,7 @@ export function LocationEdit() {
                     {...register('intro')}
                     rows={3}
                     placeholder="Breve descrizione del luogo..."
+                    disabled={!canEditAnagrafica}
                   />
                 </div>
 
@@ -349,6 +371,7 @@ export function LocationEdit() {
                   <Switch
                     checked={isPublished ?? true}
                     onCheckedChange={(v) => setValue('is_published', v, { shouldDirty: true })}
+                    disabled={!canEditAnagrafica}
                   />
                   <Label className="cursor-pointer">Pubblicato</Label>
                 </div>
@@ -362,6 +385,7 @@ export function LocationEdit() {
                       setEmails(v);
                       setExtraDirty(true);
                     }}
+                    disabled={!canEditAnagrafica}
                   />
                 </div>
               </CardContent>
