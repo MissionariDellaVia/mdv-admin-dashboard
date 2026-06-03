@@ -15,7 +15,9 @@ import {
   MessageSquare,
   MapPin,
   Users,
-  BarChart3
+  BarChart3,
+  CheckCircle2,
+  CalendarDays
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -75,6 +77,11 @@ export function Dashboard() {
     queryFn: gospelDailyApi.getCommentedCount,
   });
 
+  const { data: coverage = { covered: 0, total: 30 } } = useQuery({
+    queryKey: ['gospel-daily-upcoming-coverage'],
+    queryFn: () => gospelDailyApi.getUpcomingCoverage(30),
+  });
+
   const { data: monthlyBuckets = [] } = useQuery({
     queryKey: ['gospel-daily-monthly'],
     queryFn: () => gospelDailyApi.getMonthlyCounts(6),
@@ -90,8 +97,7 @@ export function Dashboard() {
 
   // Bar chart helpers
   const maxCount = Math.max(1, ...monthlyBuckets.map(b => b.count));
-  const coveragePercent = Math.round((commentedCount / Math.max(1, gospelDailyCount)) * 100);
-  const avgComments = (totalComments / Math.max(1, gospelDailyCount)).toFixed(1);
+  const toComplete = Math.max(0, gospelDailyCount - commentedCount);
 
   return (
     <motion.div
@@ -292,45 +298,78 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Coverage card — lg:col-span-1 */}
-        <Card className="shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-brown-600" />
-              Copertura commenti
-            </CardTitle>
-            <CardDescription>Quante "Via del Vangelo" hanno almeno un commento</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-5xl font-bold text-brown-900 text-center py-2">
-              {coveragePercent}%
-            </div>
+        {/* Two stacked insight cards — lg:col-span-1 */}
+        <div className="space-y-6 lg:col-span-1">
 
-            {/* Progress bar */}
-            <div className="w-full h-3 bg-brown-100 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-brown-400 to-brown-600 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${coveragePercent}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-            </div>
+          {/* Card 1 — Giornate da completare */}
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CheckCircle2 className="h-5 w-5 text-brown-600" />
+                Giornate da completare
+              </CardTitle>
+              <CardDescription>Via del Vangelo senza commento principale</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className={`text-5xl font-bold text-center py-1 ${toComplete === 0 ? 'text-green-600' : 'text-amber-700'}`}>
+                {toComplete}
+              </div>
 
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>
+              {/* Progress bar (completed ratio) */}
+              <div className="w-full h-2.5 bg-brown-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-brown-400 to-brown-600 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.round((commentedCount / Math.max(1, gospelDailyCount)) * 100)}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              </div>
+
+              <p className="text-sm text-muted-foreground">
                 <span className="font-medium text-brown-800">{commentedCount}</span>{' '}
                 di{' '}
                 <span className="font-medium text-brown-800">{gospelDailyCount}</span>{' '}
-                giornate con commento
+                Via del Vangelo con commento
               </p>
-              <p>
-                media{' '}
-                <span className="font-medium text-brown-700">{avgComments}</span>{' '}
-                commenti per giornata
+              <p className="text-xs text-muted-foreground">
+                Una Via del Vangelo è completa con almeno un commento.
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Card 2 — Copertura calendario */}
+          <Card className="shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CalendarDays className="h-5 w-5 text-brown-600" />
+                Copertura · prossimi 30 giorni
+              </CardTitle>
+              <CardDescription>Giorni con una Via del Vangelo programmata</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-center py-1">
+                <span className="text-5xl font-bold text-brown-900">{coverage.covered}</span>
+                <span className="text-lg font-medium text-muted-foreground ml-1">su {coverage.total} giorni</span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-2.5 bg-brown-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-brown-400 to-brown-600 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.round((coverage.covered / Math.max(1, coverage.total)) * 100)}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-brown-800">{coverage.total - coverage.covered}</span>{' '}
+                giorni ancora senza Via del Vangelo
+              </p>
+            </CardContent>
+          </Card>
+
+        </div>
       </motion.div>
 
       {/* Main Content Grid */}
