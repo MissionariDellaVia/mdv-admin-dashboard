@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { locationsApi } from '@/lib/api';
+import { locationsApi, eventsApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Sparkles } from 'lucide-react';
 import type { Location } from '@/lib/types';
 
 const ALL_LANGS = ['it', 'en', 'es', 'fr', 'pl', 'pt'];
@@ -29,6 +29,12 @@ export function LocationList() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ['locations'],
     queryFn: () => locationsApi.getAll(),
+  });
+
+  // Event counts per slug, for the "attività" badge on each card.
+  const { data: eventCounts = {} } = useQuery({
+    queryKey: ['event-counts'],
+    queryFn: () => eventsApi.getCountsBySlug(),
   });
 
   const del = useMutation({
@@ -76,6 +82,7 @@ export function LocationList() {
             // Use the Italian row name if available, otherwise the first one.
             const display = group.find((r) => r.lang === 'it') ?? group[0];
             const presentLangs = new Set(group.map((r) => r.lang));
+            const activityCount = eventCounts[slug] ?? 0;
 
             return (
               <Card
@@ -87,7 +94,15 @@ export function LocationList() {
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-brown-600 shrink-0" />
                     <div>
-                      <p className="font-semibold text-brown-900">{display.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-brown-900">{display.name}</p>
+                        {activityCount > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-brown-100 text-brown-700">
+                            <Sparkles className="h-3 w-3" />
+                            {activityCount} attività
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground mb-1">
                         {slug}{display.is_published ? '' : ' · bozza'}
                       </p>

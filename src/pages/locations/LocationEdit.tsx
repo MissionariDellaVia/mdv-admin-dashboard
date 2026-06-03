@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
-import { locationsApi, locationInfoApi, eventsApi } from '@/lib/api';
+import { locationsApi, locationInfoApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,19 +12,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { RichTextEditor } from '@/components/editors/RichTextEditor';
 import { useToast } from '@/hooks/use-toast';
-import {
-  ArrowLeft,
-  Save,
-  Plus,
-  Trash2,
-  Upload,
-  Globe,
-  Image as ImageIcon,
-  FileText,
-} from 'lucide-react';
-import type { Location, LocationEmail, ContactType, ActivityEvent, ActivityEventFormData } from '@/lib/types';
+import { ArrowLeft, Save, Globe, Upload, X, Copy } from 'lucide-react';
+import type { Location, LocationEmail } from '@/lib/types';
+import { EmailsRepeater } from './components/EmailsRepeater';
+import { EventsTab } from './components/EventsTab';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -52,302 +45,6 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-/** Small repeater for email contacts (frate / suora). */
-function EmailsRepeater({
-  emails,
-  onChange,
-}: {
-  emails: LocationEmail[];
-  onChange: (v: LocationEmail[]) => void;
-}) {
-  const add = () => onChange([...emails, { type: 'frate', email: '' }]);
-  const remove = (i: number) => onChange(emails.filter((_, idx) => idx !== i));
-  const update = (i: number, patch: Partial<LocationEmail>) =>
-    onChange(emails.map((e, idx) => (idx === i ? { ...e, ...patch } : e)));
-
-  return (
-    <div className="space-y-3">
-      {emails.map((entry, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <select
-            value={entry.type}
-            onChange={(e) => update(i, { type: e.target.value as ContactType })}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="frate">Frate</option>
-            <option value="suora">Suora</option>
-          </select>
-          <Input
-            type="email"
-            placeholder="email@example.com"
-            value={entry.email}
-            onChange={(e) => update(i, { email: e.target.value })}
-            className="flex-1"
-          />
-          <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)}>
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        </div>
-      ))}
-      <Button type="button" variant="outline" size="sm" onClick={add}>
-        <Plus className="mr-1 h-4 w-4" /> Aggiungi contatto
-      </Button>
-    </div>
-  );
-}
-
-/** Inline event form for adding a flyer or a text event. */
-function AddEventForm({
-  slug,
-  lang,
-  type,
-  onClose,
-}: {
-  slug: string;
-  lang: string;
-  type: 'flyer' | 'text';
-  onClose: () => void;
-}) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [eventDate, setEventDate] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) {
-      setImageFile(f);
-      setImagePreview(URL.createObjectURL(f));
-    }
-    e.target.value = '';
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      let imageUrl: string | null = null;
-      if (type === 'flyer') {
-        if (!imageFile) {
-          toast({ title: 'Errore', description: 'Seleziona un\'immagine per il volantino', variant: 'destructive' });
-          setSaving(false);
-          return;
-        }
-        imageUrl = await locationsApi.uploadImage(imageFile, slug);
-      }
-      const payload: ActivityEventFormData = {
-        location_slug: slug,
-        type,
-        lang: type === 'flyer' ? null : lang,
-        title: title || null,
-        body: type === 'text' ? (body || null) : null,
-        image: imageUrl,
-        event_date: eventDate || null,
-        is_published: true,
-      };
-      await eventsApi.create(payload);
-      queryClient.invalidateQueries({ queryKey: ['events', slug, lang] });
-      toast({ title: 'Salvato', description: type === 'flyer' ? 'Volantino aggiunto' : 'Evento aggiunto' });
-      onClose();
-    } catch (e) {
-      toast({ title: 'Errore', description: (e as Error).message, variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
-      <p className="text-sm font-semibold">
-        {type === 'flyer' ? 'Nuovo Volantino' : 'Nuovo Evento testuale'}
-      </p>
-      {type === 'flyer' && (
-        <div className="space-y-2">
-          <Label>Immagine *</Label>
-          <label className="inline-flex items-center gap-2 text-sm cursor-pointer text-brown-700">
-            <Upload className="h-4 w-4" />
-            {imageFile ? imageFile.name : 'Seleziona immagine'}
-            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-          </label>
-          {imagePreview && (
-            <img src={imagePreview} alt="preview" className="h-24 object-cover rounded border" />
-          )}
-        </div>
-      )}
-      <div className="space-y-2">
-        <Label>Titolo (opzionale)</Label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titolo..." />
-      </div>
-      {type === 'text' && (
-        <div className="space-y-2">
-          <Label>Contenuto HTML</Label>
-          <Textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={4}
-            placeholder="<p>...</p>"
-          />
-        </div>
-      )}
-      <div className="space-y-2">
-        <Label>Data evento (opzionale)</Label>
-        <Input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
-      </div>
-      <div className="flex gap-2">
-        <Button type="button" size="sm" disabled={saving} onClick={handleSave} className="bg-brown-600 hover:bg-brown-700">
-          {saving ? 'Salvando...' : 'Salva'}
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onClose}>
-          Annulla
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/** Single event row in the events list. */
-function EventRow({ event, slug, lang }: { event: ActivityEvent; slug: string; lang: string }) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const togglePublish = useMutation({
-    mutationFn: () => eventsApi.update(event.id, { is_published: !event.is_published }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events', slug, lang] }),
-    onError: (e: Error) => toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
-  });
-
-  const remove = useMutation({
-    mutationFn: () => eventsApi.delete(event.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events', slug, lang] });
-      toast({ title: 'Eliminato' });
-    },
-    onError: (e: Error) => toast({ title: 'Errore', description: e.message, variant: 'destructive' }),
-  });
-
-  return (
-    <div className="flex items-center gap-3 border rounded-lg p-3">
-      {event.image && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <img
-              src={event.image}
-              alt=""
-              className="h-12 w-12 object-cover rounded border shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-            />
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl flex items-center justify-center bg-black/90 border-0 p-4">
-            <img
-              src={event.image}
-              alt=""
-              className="max-h-[80vh] w-auto mx-auto object-contain"
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-      {!event.image && (
-        <div className="h-12 w-12 flex items-center justify-center bg-muted rounded border shrink-0">
-          {event.type === 'flyer' ? (
-            <ImageIcon className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <FileText className="h-5 w-5 text-muted-foreground" />
-          )}
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
-              event.type === 'flyer'
-                ? 'bg-blue-50 border-blue-300 text-blue-700'
-                : 'bg-green-50 border-green-300 text-green-700'
-            }`}
-          >
-            {event.type === 'flyer' ? 'Volantino' : 'Evento'}
-          </span>
-          {event.lang === null && (
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border bg-purple-50 border-purple-300 text-purple-700">
-              tutte le lingue
-            </span>
-          )}
-          <span className="text-sm font-medium truncate">
-            {event.title ?? <span className="text-muted-foreground italic">senza titolo</span>}
-          </span>
-        </div>
-        {event.event_date && (
-          <p className="text-xs text-muted-foreground mt-0.5">{event.event_date}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <Switch
-          checked={event.is_published}
-          onCheckedChange={() => togglePublish.mutate()}
-          aria-label="Pubblicato"
-        />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          disabled={remove.isPending}
-          onClick={() => {
-            if (confirm('Eliminare questo evento?')) remove.mutate();
-          }}
-        >
-          <Trash2 className="h-4 w-4 text-red-500" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/** Tab 3 — Events for this (slug, lang). */
-function EventsTab({ slug, lang }: { slug: string; lang: string }) {
-  const [adding, setAdding] = useState<'flyer' | 'text' | null>(null);
-
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events', slug, lang],
-    queryFn: () => eventsApi.getForLocation(slug, lang),
-    enabled: !!slug,
-  });
-
-  return (
-    <div className="space-y-4">
-      {isLoading && <p className="text-sm text-muted-foreground">Caricamento...</p>}
-      {!isLoading && events.length === 0 && (
-        <p className="text-sm text-muted-foreground">Nessun evento o volantino.</p>
-      )}
-      <div className="space-y-2">
-        {events.map((ev) => (
-          <EventRow key={ev.id} event={ev} slug={slug} lang={lang} />
-        ))}
-      </div>
-
-      {adding ? (
-        <AddEventForm
-          slug={slug}
-          lang={lang}
-          type={adding}
-          onClose={() => setAdding(null)}
-        />
-      ) : (
-        <div className="flex gap-2 pt-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => setAdding('flyer')}>
-            <ImageIcon className="mr-1 h-4 w-4" /> Aggiungi Volantino
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => setAdding('text')}>
-            <FileText className="mr-1 h-4 w-4" /> Aggiungi Evento testuale
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function LocationEdit() {
@@ -360,6 +57,11 @@ export function LocationEdit() {
   const [selectedLang, setSelectedLang] = useState<string>('it');
   const [emails, setEmails] = useState<LocationEmail[]>([]);
   const [infoBody, setInfoBody] = useState('');
+  const [infoImages, setInfoImages] = useState<string[]>([]);
+  const [copySource, setCopySource] = useState('');
+  const [uploadingInfo, setUploadingInfo] = useState(false);
+  // Tracks unsaved edits in the non-RHF controlled bits (emails / info body / info images).
+  const [extraDirty, setExtraDirty] = useState(false);
 
   // ── Fetch all language rows for this slug (edit mode) ──────────────────────
   const { data, isLoading } = useQuery({
@@ -380,35 +82,39 @@ export function LocationEdit() {
     setValue,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { is_published: true },
   });
 
   const isPublished = watch('is_published');
+  const slugValue = watch('slug');
+  const dirty = isDirty || extraDirty;
 
   // ── Populate form when selectedLang or locationRows changes ───────────────
   useEffect(() => {
     const row = langMap.get(selectedLang);
     if (row) {
-      setValue('name', row.name);
-      setValue('slug', row.slug);
-      setValue('city', row.city ?? '');
-      setValue('address', row.address ?? '');
-      setValue('latitude', row.latitude ?? null);
-      setValue('longitude', row.longitude ?? null);
-      setValue('phone', row.phone ?? '');
-      setValue('intro', row.intro ?? '');
-      setValue('is_published', row.is_published);
+      reset({
+        name: row.name,
+        slug: row.slug,
+        city: row.city ?? '',
+        address: row.address ?? '',
+        latitude: row.latitude ?? null,
+        longitude: row.longitude ?? null,
+        phone: row.phone ?? '',
+        intro: row.intro ?? '',
+        is_published: row.is_published,
+      });
       setEmails(Array.isArray(row.emails) ? row.emails : []);
       setInfoBody(row.location_info?.[0]?.body ?? '');
+      setInfoImages(row.location_info?.[0]?.images ?? []);
     } else if (isEdit) {
-      // Language not yet created: keep slug fixed, blank the rest
-      const firstRow = locationRows[0];
+      // Language not yet created: keep slug fixed, blank the rest.
       reset({
         name: '',
-        slug: firstRow?.slug ?? '',
+        slug: locationRows[0]?.slug ?? '',
         city: '',
         address: '',
         latitude: null,
@@ -419,46 +125,114 @@ export function LocationEdit() {
       });
       setEmails([]);
       setInfoBody('');
+      setInfoImages([]);
     } else {
-      // New mode
+      // New mode.
       reset({ is_published: true });
       setEmails([]);
       setInfoBody('');
+      setInfoImages([]);
     }
+    setExtraDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLang, locationRows]);
 
+  // ── Unsaved-changes guard ──────────────────────────────────────────────────
+  const confirmIfDirty = () =>
+    !dirty || window.confirm('Hai modifiche non salvate in questa lingua. Continuare e perderle?');
+
+  const switchLang = (l: string) => {
+    if (l === selectedLang) return;
+    if (confirmIfDirty()) setSelectedLang(l);
+  };
+
+  const goToList = () => {
+    if (confirmIfDirty()) navigate('/locations');
+  };
+
+  // ── Copy all fields from another language (base for translation) ───────────
+  const sourceLangs = Array.from(presentLangs);
+  const effectiveSource = copySource || sourceLangs[0];
+
+  const handleCopyFrom = () => {
+    const src = langMap.get(effectiveSource);
+    if (!src) return;
+    setValue('name', src.name, { shouldDirty: true });
+    setValue('city', src.city ?? '', { shouldDirty: true });
+    setValue('address', src.address ?? '', { shouldDirty: true });
+    setValue('latitude', src.latitude ?? null, { shouldDirty: true });
+    setValue('longitude', src.longitude ?? null, { shouldDirty: true });
+    setValue('phone', src.phone ?? '', { shouldDirty: true });
+    setValue('intro', src.intro ?? '', { shouldDirty: true });
+    setValue('is_published', src.is_published, { shouldDirty: true });
+    setEmails(Array.isArray(src.emails) ? src.emails : []);
+    setInfoBody(src.location_info?.[0]?.body ?? '');
+    setInfoImages(src.location_info?.[0]?.images ?? []);
+    setExtraDirty(true);
+    toast({
+      title: 'Dati copiati',
+      description: `Copiati da "${effectiveSource.toUpperCase()}". Traduci i testi e salva.`,
+    });
+  };
+
+  // ── Info images upload ──────────────────────────────────────────────────────
+  const handleInfoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!slugValue) {
+      toast({ title: 'Errore', description: 'Inserisci prima lo slug', variant: 'destructive' });
+      return;
+    }
+    setUploadingInfo(true);
+    try {
+      const url = await locationsApi.uploadImage(file, slugValue);
+      setInfoImages((prev) => [...prev, url]);
+      setExtraDirty(true);
+    } catch (err) {
+      toast({ title: 'Errore', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setUploadingInfo(false);
+    }
+  };
+
+  const removeInfoImage = (url: string) => {
+    setInfoImages((prev) => prev.filter((u) => u !== url));
+    setExtraDirty(true);
+  };
+
   // ── Save mutation ─────────────────────────────────────────────────────────
   const save = useMutation({
-    mutationFn: async (data: FormData) => {
+    mutationFn: async (formData: FormData) => {
       const exists = langMap.get(selectedLang);
       const payload = {
-        name: data.name,
-        slug: data.slug,
+        name: formData.name,
+        slug: formData.slug,
         lang: selectedLang,
-        city: data.city ?? null,
-        address: data.address ?? null,
-        latitude: data.latitude ?? null,
-        longitude: data.longitude ?? null,
-        phone: data.phone ?? null,
-        intro: data.intro ?? null,
-        is_published: data.is_published ?? true,
+        city: formData.city ?? null,
+        address: formData.address ?? null,
+        latitude: formData.latitude ?? null,
+        longitude: formData.longitude ?? null,
+        phone: formData.phone ?? null,
+        intro: formData.intro ?? null,
+        is_published: formData.is_published ?? true,
         emails,
       };
       const loc = exists
         ? await locationsApi.update(exists.id, payload)
         : await locationsApi.create(payload);
 
-      // Save the single "info statica" row.
+      // Save the single "info statica" row (body + images).
       const existingInfo = exists?.location_info?.[0];
       if (existingInfo) {
-        await locationInfoApi.update(existingInfo.id, { body: infoBody });
+        await locationInfoApi.update(existingInfo.id, { body: infoBody, images: infoImages });
       } else {
-        await locationInfoApi.create(loc.id, { body: infoBody, position: 0 });
+        await locationInfoApi.create(loc.id, { body: infoBody, images: infoImages, position: 0 });
       }
       return loc;
     },
     onSuccess: (loc) => {
+      setExtraDirty(false);
       queryClient.invalidateQueries({ queryKey: ['locations'] });
       queryClient.invalidateQueries({ queryKey: ['location', loc.slug] });
       toast({ title: 'Salvato', description: `Lingua "${selectedLang}" salvata` });
@@ -489,14 +263,12 @@ export function LocationEdit() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* ── Header ── */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/locations')}>
+        <Button variant="ghost" size="icon" onClick={goToList}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold text-brown-900">{pageTitle}</h1>
-          {isEdit && (
-            <p className="text-sm text-muted-foreground">{slugParam}</p>
-          )}
+          {isEdit && <p className="text-sm text-muted-foreground">{slugParam}</p>}
         </div>
       </div>
 
@@ -525,7 +297,7 @@ export function LocationEdit() {
                         ? 'border-brown-400 text-brown-700'
                         : 'text-muted-foreground'
                     }
-                    onClick={() => setSelectedLang(l)}
+                    onClick={() => switchLang(l)}
                   >
                     {l.toUpperCase()}
                     {exists && !active && (
@@ -536,9 +308,30 @@ export function LocationEdit() {
               })}
             </div>
             {!presentLangs.has(selectedLang) && (
-              <p className="text-xs text-amber-600 mt-1">
-                Questa lingua non esiste ancora — verrà creata al salvataggio.
-              </p>
+              <div className="mt-1 space-y-2">
+                <p className="text-xs text-amber-600">
+                  Questa lingua non esiste ancora — verrà creata al salvataggio.
+                </p>
+                {sourceLangs.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Copia dati da</span>
+                    <select
+                      value={effectiveSource}
+                      onChange={(e) => setCopySource(e.target.value)}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      {sourceLangs.map((l) => (
+                        <option key={l} value={l}>
+                          {l.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <Button type="button" size="sm" variant="outline" onClick={handleCopyFrom}>
+                      <Copy className="mr-1 h-3.5 w-3.5" /> Copia
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </>
         ) : (
@@ -562,9 +355,7 @@ export function LocationEdit() {
           <TabsList>
             <TabsTrigger value="dati">Dati del luogo</TabsTrigger>
             <TabsTrigger value="info">Info statiche</TabsTrigger>
-            <TabsTrigger value="attivita" disabled={!isEdit}>
-              Attività
-            </TabsTrigger>
+            <TabsTrigger value="attivita">Attività</TabsTrigger>
           </TabsList>
 
           {/* ── Tab 1: Dati ── */}
@@ -672,7 +463,7 @@ export function LocationEdit() {
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={isPublished ?? true}
-                    onCheckedChange={(v) => setValue('is_published', v)}
+                    onCheckedChange={(v) => setValue('is_published', v, { shouldDirty: true })}
                   />
                   <Label className="cursor-pointer">Pubblicato</Label>
                 </div>
@@ -680,7 +471,13 @@ export function LocationEdit() {
                 {/* Emails / Contacts */}
                 <div className="space-y-2">
                   <Label>Contatti email</Label>
-                  <EmailsRepeater emails={emails} onChange={setEmails} />
+                  <EmailsRepeater
+                    emails={emails}
+                    onChange={(v) => {
+                      setEmails(v);
+                      setExtraDirty(true);
+                    }}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -689,20 +486,60 @@ export function LocationEdit() {
           {/* ── Tab 2: Info statiche ── */}
           <TabsContent value="info">
             <Card>
-              <CardContent className="space-y-3 pt-6">
+              <CardContent className="space-y-4 pt-6">
                 <div className="space-y-1.5">
-                  <Label htmlFor="infoBody">Orari e info ricorrenti (HTML)</Label>
+                  <Label>Orari e info ricorrenti</Label>
                   <p className="text-xs text-muted-foreground">
-                    Es. <code>&lt;ul&gt;&lt;li&gt;&lt;strong&gt;Santa Messa&lt;/strong&gt; ...&lt;/li&gt;&lt;/ul&gt;</code>
+                    Es. orari delle messe, recapiti, indicazioni. Usa l'editor per grassetto,
+                    elenchi e link.
                   </p>
-                  <Textarea
-                    id="infoBody"
-                    value={infoBody}
-                    onChange={(e) => setInfoBody(e.target.value)}
-                    rows={8}
-                    placeholder="<ul><li><strong>Santa Messa</strong> – Dom. 10:00</li></ul>"
-                    className="font-mono text-sm"
+                  <RichTextEditor
+                    content={infoBody}
+                    onChange={(v) => {
+                      setInfoBody(v);
+                      setExtraDirty(true);
+                    }}
                   />
+                </div>
+
+                {/* Info images */}
+                <div className="space-y-2">
+                  <Label>Immagini info (opzionale)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Mostrate nell'app pubblica accanto al testo, quando il luogo non ha volantini.
+                  </p>
+                  {infoImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {infoImages.map((url) => (
+                        <div key={url} className="relative">
+                          <img
+                            src={url}
+                            alt=""
+                            className="h-20 w-20 object-cover rounded border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeInfoImage(url)}
+                            className="absolute -top-2 -right-2 bg-white rounded-full border shadow p-0.5 hover:bg-red-50"
+                            aria-label="Rimuovi immagine"
+                          >
+                            <X className="h-3.5 w-3.5 text-red-500" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <label className="inline-flex items-center gap-2 text-sm cursor-pointer text-brown-700">
+                    <Upload className="h-4 w-4" />
+                    {uploadingInfo ? 'Caricamento...' : 'Aggiungi immagine'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingInfo}
+                      onChange={handleInfoImageUpload}
+                    />
+                  </label>
                 </div>
               </CardContent>
             </Card>
@@ -715,9 +552,24 @@ export function LocationEdit() {
                 {isEdit ? (
                   <EventsTab slug={slugParam!} lang={selectedLang} />
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Salva il luogo per gestire le attività e i volantini.
-                  </p>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex gap-3 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                      <div className="space-y-1">
+                        <p>
+                          <span className="font-semibold text-blue-700">Volantini</span> — immagini
+                          in carosello, valide per tutte le lingue.
+                        </p>
+                        <p>
+                          <span className="font-semibold text-green-700">Eventi testuali</span> —
+                          testo descrittivo, specifici per lingua.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Salva prima il luogo (tab <strong>Dati del luogo</strong>) per aggiungere
+                      volantini ed eventi.
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -734,7 +586,7 @@ export function LocationEdit() {
             <Save className="mr-2 h-4 w-4" />
             {save.isPending ? 'Salvataggio...' : `Salva "${selectedLang.toUpperCase()}"`}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/locations')}>
+          <Button type="button" variant="outline" onClick={goToList}>
             Torna alla lista
           </Button>
         </div>

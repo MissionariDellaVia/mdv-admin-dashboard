@@ -507,6 +507,16 @@ export const eventsApi = {
     const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) throw error;
   },
+  /** Number of events per location_slug, for list badges. */
+  async getCountsBySlug() {
+    const { data, error } = await supabase.from('events').select('location_slug');
+    if (error) throw error;
+    const counts: Record<string, number> = {};
+    for (const r of (data ?? []) as { location_slug: string }[]) {
+      counts[r.location_slug] = (counts[r.location_slug] ?? 0) + 1;
+    }
+    return counts;
+  },
 };
 
 // LOCATION INFO API
