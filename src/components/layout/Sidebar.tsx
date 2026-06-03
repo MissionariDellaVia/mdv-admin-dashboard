@@ -74,8 +74,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   className={({ isActive }) => cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-mdv-dark text-white"
-                      : "text-mdv-cream/70 hover:bg-mdv-dark/60 hover:text-white"
+                      ? "bg-brown-50 text-mdv-darkest shadow-sm"
+                      : "text-mdv-cream/70 hover:bg-mdv-cream/15 hover:text-white"
                   )}
                   onClick={onClose}
                 >
