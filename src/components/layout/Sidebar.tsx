@@ -75,7 +75,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
                       ? "bg-gold-500 text-white"
-                      : "text-mdv-cream/70 hover:bg-mdv-medium/60 hover:text-white"
+                      : "text-mdv-cream/70 hover:bg-gold-500/70 hover:text-white"
                   )}
                   onClick={onClose}
                 >
