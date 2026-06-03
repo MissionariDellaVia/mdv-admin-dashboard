@@ -246,7 +246,37 @@ export const gospelDailyApi = {
       .delete()
       .eq('id', id);
     if (error) throw error;
-  }
+  },
+
+  // Quante "Via del Vangelo" hanno almeno un commento (giornate distinte con commenti).
+  async getCommentedCount() {
+    const { data, error } = await supabase.from('comment_sections').select('gospel_daily_id');
+    if (error) throw error;
+    const ids = new Set((data ?? []).map((r: { gospel_daily_id: number }) => r.gospel_daily_id));
+    return ids.size;
+  },
+
+  // Conteggi di pubblicazione per mese, ultimi `months` mesi (ordine cronologico).
+  async getMonthlyCounts(months = 6) {
+    const since = new Date();
+    since.setDate(1);
+    since.setMonth(since.getMonth() - (months - 1));
+    const sinceStr = since.toISOString().slice(0, 10);
+    const { data, error } = await supabase.from('gospel_daily').select('date').gte('date', sinceStr);
+    if (error) throw error;
+    const buckets: { month: string; count: number }[] = [];
+    const cursor = new Date(since);
+    for (let i = 0; i < months; i++) {
+      buckets.push({ month: cursor.toISOString().slice(0, 7), count: 0 });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    const idx = new Map(buckets.map((b, i) => [b.month, i] as const));
+    for (const r of (data ?? []) as { date: string }[]) {
+      const i = idx.get(r.date.slice(0, 7));
+      if (i !== undefined) buckets[i].count++;
+    }
+    return buckets;
+  },
 };
 // COMMENT SECTIONS API
 export const commentSectionsApi = {
